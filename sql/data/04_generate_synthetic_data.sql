@@ -144,7 +144,7 @@ SELECT
     DATEADD('day', UNIFORM(0, 30, RANDOM()), c.acquisition_date) AS opening_date,
     
     CASE 
-        WHEN c.customer_status = 'CLOSED' THEN DATEADD('day', UNIFORM(30, 365, RANDOM()), opening_date)
+        WHEN c.customer_status = 'CLOSED' THEN DATEADD('day', UNIFORM(30, 365, RANDOM()), DATEADD('day', UNIFORM(0, 30, RANDOM()), c.acquisition_date))
         ELSE NULL
     END AS closing_date,
     
@@ -235,7 +235,7 @@ SELECT
     CASE 
         WHEN account_type = 'SAVINGS' THEN 
             CASE 
-                WHEN current_balance >= 5000 THEN 5.00
+                WHEN ROUND(UNIFORM(0, 25000, RANDOM()), 2) >= 5000 THEN 5.00
                 ELSE 2.50
             END
         ELSE NULL
@@ -447,33 +447,36 @@ FROM (
 INSERT INTO TRANSACTIONS
 SELECT
     'TXN' || LPAD(SEQ4(), 12, '0') AS transaction_id,
-    a.account_id,
-    a.customer_id,
-    transaction_type,
+    base_txn.account_id,
+    base_txn.customer_id,
+    base_txn.transaction_type,
     CASE 
-        WHEN transaction_type = 'DEBIT' THEN 
+        WHEN base_txn.transaction_type = 'DEBIT' THEN 
             CASE 
                 WHEN m.mcc_code = '6011' THEN 'ATM'
                 WHEN m.mcc_code IN ('6010') THEN 'P2P'
                 ELSE 'POS'
             END
-        WHEN transaction_type = 'CREDIT' THEN 'ACH'
-        WHEN transaction_type = 'TRANSFER' THEN 'TRANSFER'
+        WHEN base_txn.transaction_type = 'CREDIT' THEN 'ACH'
+        WHEN base_txn.transaction_type = 'TRANSFER' THEN 'TRANSFER'
         ELSE 'OTHER'
     END AS transaction_category,
     
-    transaction_date,
-    DATEADD('second', UNIFORM(0, 86399, RANDOM()), transaction_date::TIMESTAMP_NTZ) AS transaction_timestamp,
+    base_txn.transaction_date,
+    DATEADD('second', UNIFORM(0, 86399, RANDOM()), base_txn.transaction_date::TIMESTAMP_NTZ) AS transaction_timestamp,
     
     CASE 
-        WHEN transaction_type = 'DEBIT' THEN -ABS(amount)
-        ELSE ABS(amount)
+        WHEN base_txn.transaction_type = 'DEBIT' THEN -ABS(base_txn.amount)
+        ELSE ABS(base_txn.amount)
     END AS amount,
     
     -- Running balance (simplified - in production would be calculated properly)
-    a.current_balance + SUM(amount) OVER (
-        PARTITION BY a.account_id 
-        ORDER BY transaction_timestamp 
+    base_txn.current_balance + SUM(CASE 
+        WHEN base_txn.transaction_type = 'DEBIT' THEN -ABS(base_txn.amount)
+        ELSE ABS(base_txn.amount)
+    END) OVER (
+        PARTITION BY base_txn.account_id 
+        ORDER BY DATEADD('second', UNIFORM(0, 86399, RANDOM()), base_txn.transaction_date::TIMESTAMP_NTZ)
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
     ) AS running_balance,
     
@@ -482,10 +485,10 @@ SELECT
     m.merchant_city,
     m.merchant_state,
     
-    CASE transaction_type
+    CASE base_txn.transaction_type
         WHEN 'DEBIT' THEN m.merchant_name || ' Purchase'
-        WHEN 'CREDIT' THEN 'Direct Deposit - ' || COALESCE(dd.employer_name, 'Transfer')
-        WHEN 'TRANSFER' THEN 'Transfer ' || CASE WHEN amount > 0 THEN 'In' ELSE 'Out' END
+        WHEN 'CREDIT' THEN 'Direct Deposit - ' || COALESCE(base_txn.employer_name, 'Transfer')
+        WHEN 'TRANSFER' THEN 'Transfer ' || CASE WHEN base_txn.amount > 0 THEN 'In' ELSE 'Out' END
         ELSE 'Fee/Adjustment'
     END AS description,
     
@@ -499,8 +502,8 @@ SELECT
     LEAST(99, GREATEST(1, 
         CASE 
             WHEN m.mcc_code IN ('7995', '5933', '6010') THEN UNIFORM(20, 80, RANDOM())
-            WHEN ABS(amount) > 1000 THEN UNIFORM(10, 50, RANDOM())
-            WHEN is_international THEN UNIFORM(5, 30, RANDOM())
+            WHEN ABS(base_txn.amount) > 1000 THEN UNIFORM(10, 50, RANDOM())
+            WHEN UNIFORM(0, 100, RANDOM()) < 5 THEN UNIFORM(5, 30, RANDOM()) -- 5% international
             ELSE UNIFORM(1, 10, RANDOM())
         END
     )) / 100.0 AS fraud_score,
@@ -552,10 +555,9 @@ CROSS JOIN LATERAL (
         END
     ))
 ) AS txn_gen
-CROSS JOIN (
+CROSS JOIN LATERAL (
     SELECT * FROM temp_merchants 
-    ORDER BY RANDOM() 
-    LIMIT 1
+    SAMPLE (1 ROWS)
 ) AS m
 LIMIT 50000000; -- Generate 50M transactions first (adjust as needed)
 
