@@ -509,15 +509,22 @@ CREATE OR REPLACE DYNAMIC TABLE FRAUD_DETECTION_FEATURES
 -- ============================================================================
 CREATE OR REPLACE VIEW V_POINT_IN_TIME_FEATURES AS
 SELECT 
-    fv.entity_id,
-    fv.feature_timestamp,
-    OBJECT_AGG(fv.feature_id, fv.feature_value) as features
-FROM FEATURE_VALUES fv
-QUALIFY ROW_NUMBER() OVER (
-    PARTITION BY fv.entity_id, fv.feature_id 
-    ORDER BY fv.feature_timestamp DESC
-) = 1
-GROUP BY fv.entity_id, fv.feature_timestamp;
+    entity_id,
+    feature_timestamp,
+    OBJECT_AGG(feature_id, feature_value) as features
+FROM (
+    SELECT 
+        fv.entity_id,
+        fv.feature_timestamp,
+        fv.feature_id,
+        fv.feature_value
+    FROM FEATURE_VALUES fv
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY fv.entity_id, fv.feature_id 
+        ORDER BY fv.feature_timestamp DESC
+    ) = 1
+)
+GROUP BY entity_id, feature_timestamp;
 
 -- ============================================================================
 -- Create Training Dataset Generation Procedure
