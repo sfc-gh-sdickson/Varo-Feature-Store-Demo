@@ -793,20 +793,20 @@ WHERE feature_id = 'customer_advance_utilization';
 
 -- Insert feature sets
 INSERT INTO VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_SETS
-(feature_set_id, feature_set_name, use_case, description, is_active, created_by, created_at, updated_at)
+(feature_set_id, feature_set_name, use_case, description, feature_ids, is_active, created_by, created_at, updated_at)
 VALUES
 ('fraud_detection_v1', 'Fraud Detection Model V1', 'fraud_detection', 'Features for real-time fraud detection',
-TRUE, 'ml_team', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+TO_ARRAY('[]'), TRUE, 'ml_team', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 UPDATE VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_SETS
 SET feature_ids = ARRAY_CONSTRUCT('customer_txn_count_30d', 'customer_txn_amount_30d', 'customer_unique_merchants_30d', 'customer_fraud_transaction_ratio')
 WHERE feature_set_id = 'fraud_detection_v1';
 
 INSERT INTO VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_SETS
-(feature_set_id, feature_set_name, use_case, description, is_active, created_by, created_at, updated_at)
+(feature_set_id, feature_set_name, use_case, description, feature_ids, is_active, created_by, created_at, updated_at)
 VALUES
 ('credit_risk_v1', 'Credit Risk Assessment V1', 'credit_risk', 'Features for credit limit and advance eligibility',
-TRUE, 'ml_team', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+TO_ARRAY('[]'), TRUE, 'ml_team', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 UPDATE VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_SETS
 SET feature_ids = ARRAY_CONSTRUCT('customer_avg_daily_balance', 'customer_advance_utilization', 'customer_txn_amount_30d')
