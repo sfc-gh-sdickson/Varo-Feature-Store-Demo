@@ -503,42 +503,21 @@ CREATE OR REPLACE DYNAMIC TABLE FRAUD_DETECTION_FEATURES
     GROUP BY t.customer_id;
 
 -- ============================================================================
--- Create Point-in-Time Feature Retrieval Function
+-- Create Point-in-Time Feature Retrieval View
 -- Replaces Tecton's get_historical_features()
+-- Note: Converted to view since SQL UDFs have limitations with complex queries
 -- ============================================================================
-CREATE OR REPLACE FUNCTION GET_POINT_IN_TIME_FEATURES(
-    entity_ids ARRAY,
-    feature_names ARRAY,
-    timestamp_column TIMESTAMP_NTZ
-)
-RETURNS TABLE (
-    entity_id VARCHAR,
-    timestamp TIMESTAMP_NTZ,
-    features VARIANT
-)
-AS
-$$
-    WITH pit_features AS (
-        SELECT 
-            fv.entity_id,
-            fv.feature_timestamp,
-            OBJECT_AGG(fv.feature_id, fv.feature_value) as features
-        FROM FEATURE_VALUES fv
-        WHERE fv.entity_id IN (SELECT VALUE FROM TABLE(FLATTEN(INPUT => entity_ids)))
-            AND fv.feature_id IN (SELECT VALUE FROM TABLE(FLATTEN(INPUT => feature_names)))
-            AND fv.feature_timestamp <= timestamp_column
-        QUALIFY ROW_NUMBER() OVER (
-            PARTITION BY fv.entity_id, fv.feature_id 
-            ORDER BY fv.feature_timestamp DESC
-        ) = 1
-        GROUP BY fv.entity_id, fv.feature_timestamp
-    )
-    SELECT 
-        entity_id,
-        timestamp_column as timestamp,
-        features
-    FROM pit_features
-$$;
+CREATE OR REPLACE VIEW V_POINT_IN_TIME_FEATURES AS
+SELECT 
+    fv.entity_id,
+    fv.feature_timestamp,
+    OBJECT_AGG(fv.feature_id, fv.feature_value) as features
+FROM FEATURE_VALUES fv
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY fv.entity_id, fv.feature_id 
+    ORDER BY fv.feature_timestamp DESC
+) = 1
+GROUP BY fv.entity_id, fv.feature_timestamp;
 
 -- ============================================================================
 -- Create Training Dataset Generation Procedure
@@ -564,25 +543,16 @@ BEGIN
     dataset_id := 'DS_' || TO_CHAR(CURRENT_TIMESTAMP(), 'YYYYMMDD_HH24MISS');
     table_name := 'TRAINING_' || dataset_id;
     
-    -- Create training dataset table
+    -- Create training dataset table (simplified - using view instead of function)
     EXECUTE IMMEDIATE 'CREATE OR REPLACE TABLE ' || table_name || ' AS
-        WITH labels AS (' || label_sql || '),
-        features AS (
-            SELECT 
-                entity_id,
-                timestamp,
-                features
-            FROM TABLE(GET_POINT_IN_TIME_FEATURES(
-                ARRAY_AGG(entity_id),
-                (SELECT feature_ids FROM FEATURE_SETS WHERE feature_set_id = ''' || feature_set_id || '''),
-                timestamp
-            ))
-        )
+        WITH labels AS (' || label_sql || ')
         SELECT 
             l.*,
-            f.features
+            fv.features
         FROM labels l
-        JOIN features f ON l.entity_id = f.entity_id AND l.timestamp = f.timestamp
+        LEFT JOIN V_POINT_IN_TIME_FEATURES fv 
+            ON l.entity_id = fv.entity_id 
+            AND fv.feature_timestamp <= l.timestamp
         WHERE l.timestamp BETWEEN ''' || start_date || ''' AND ''' || end_date || '''';
     
     -- Get row count from created table
