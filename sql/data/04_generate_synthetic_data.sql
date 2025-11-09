@@ -603,8 +603,14 @@ SELECT
         ELSE NULL
     END AS repayment_date,
     CASE 
-        WHEN advance_status = 'REPAID' THEN advance_amount + fee_amount
-        WHEN advance_status = 'DEFAULTED' THEN 0
+        WHEN advance_status = 'REPAID' THEN advance_amount + 
+            CASE 
+                WHEN advance_amount <= 50 THEN 3.00
+                WHEN advance_amount <= 100 THEN 5.00
+                WHEN advance_amount <= 250 THEN 10.00
+                ELSE 20.00
+            END
+        WHEN advance_status = 'DEFAULTED' THEN 0.00
         ELSE NULL
     END AS repayment_amount,
     advance_status,
@@ -618,7 +624,7 @@ SELECT
     -- Default risk score
     CASE 
         WHEN advance_status = 'DEFAULTED' THEN UNIFORM(70, 99, RANDOM()) / 100.0
-        WHEN advance_status = 'ACTIVE' AND CURRENT_DATE() > due_date THEN UNIFORM(50, 80, RANDOM()) / 100.0
+        WHEN advance_status = 'ACTIVE' AND CURRENT_DATE() > DATEADD('day', 30, advance_date) THEN UNIFORM(50, 80, RANDOM()) / 100.0
         ELSE UNIFORM(1, 30, RANDOM()) / 100.0
     END AS default_risk_score,
     CURRENT_TIMESTAMP() AS created_at,
