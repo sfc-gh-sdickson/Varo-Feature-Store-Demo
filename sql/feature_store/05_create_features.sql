@@ -452,10 +452,10 @@ CREATE OR REPLACE DYNAMIC TABLE FRAUD_DETECTION_FEATURES
                     AND t.merchant_city != t.prev_merchant_city THEN 1 
                 ELSE 0 
             END) * 0.4 +
-            (COUNT(CASE 
+            CASE WHEN COUNT(CASE 
                 WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 1 THEN 1 
-            END) > 3) * 0.2 +
-            (SUM(CASE WHEN t.merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5) * 0.1
+            END) > 3 THEN 0.2 ELSE 0 END +
+            CASE WHEN SUM(CASE WHEN t.merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5 THEN 0.1 ELSE 0 END
         )) as fraud_risk_score,
         
         -- Feature vector
@@ -483,10 +483,10 @@ CREATE OR REPLACE DYNAMIC TABLE FRAUD_DETECTION_FEATURES
                         AND t.merchant_city != t.prev_merchant_city THEN 1 
                     ELSE 0 
                 END) * 0.4 +
-                (COUNT(CASE 
+                CASE WHEN COUNT(CASE 
                     WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 1 THEN 1 
-                END) > 3) * 0.2 +
-                (SUM(CASE WHEN t.merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5) * 0.1
+                END) > 3 THEN 0.2 ELSE 0 END +
+                CASE WHEN SUM(CASE WHEN t.merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5 THEN 0.1 ELSE 0 END
             ))
         ) as fraud_features
         
