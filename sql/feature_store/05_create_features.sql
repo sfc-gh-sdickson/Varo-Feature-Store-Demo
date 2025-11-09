@@ -153,11 +153,11 @@ CREATE OR REPLACE DYNAMIC TABLE CUSTOMER_PROFILE_FEATURES
         
         -- Feature vector for online serving
         OBJECT_CONSTRUCT(
-            'age_years', age_years,
-            'tenure_days', customer_tenure_days,
-            'credit_score', current_credit_score,
-            'num_accounts', num_accounts,
-            'total_balance', total_deposit_balance,
+            'age_years', DATEDIFF('year', c.date_of_birth, CURRENT_DATE()),
+            'tenure_days', DATEDIFF('day', c.acquisition_date, CURRENT_DATE()),
+            'credit_score', c.credit_score,
+            'num_accounts', COUNT(DISTINCT a.account_id),
+            'total_balance', SUM(CASE WHEN a.account_type IN ('CHECKING', 'SAVINGS') THEN a.current_balance ELSE 0 END),
             'has_direct_deposit', CASE WHEN COUNT(dd.deposit_id) > 0 THEN 1 ELSE 0 END
         ) as profile_features
         
@@ -238,8 +238,8 @@ CREATE OR REPLACE DYNAMIC TABLE TRANSACTION_PATTERN_FEATURES
             'unique_merchants_30d', unique_merchants_30d,
             'velocity_1h', txn_count_1h,
             'velocity_24h', txn_count_24h,
-            'essential_ratio', essential_spend_ratio,
-            'risk_indicator', risky_spend_ratio
+            'essential_ratio', DIV0NULL(essential_spend, txn_volume_30d),
+            'risk_indicator', DIV0NULL(risky_spend, txn_volume_30d)
         ) as transaction_features
         
     FROM transaction_windows;
@@ -285,26 +285,64 @@ CREATE OR REPLACE DYNAMIC TABLE ADVANCE_RISK_FEATURES
         CASE 
             WHEN COUNT(CASE WHEN ca.advance_status = 'DEFAULTED' THEN 1 END) > 0 THEN 0.9
             WHEN COUNT(CASE WHEN ca.repayment_date > ca.due_date THEN 1 END) > 2 THEN 0.7
-            WHEN on_time_repayment_rate < 0.8 THEN 0.5
+            WHEN DIV0NULL(
+                COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                COUNT(ca.advance_id)
+            ) < 0.8 THEN 0.5
             ELSE 0.2
         END as advance_risk_score,
         
         -- Recommended advance limit
         CASE 
-            WHEN num_defaults > 0 THEN 0
-            WHEN on_time_repayment_rate >= 0.95 AND total_advances_taken >= 5 THEN 500
-            WHEN on_time_repayment_rate >= 0.90 AND total_advances_taken >= 3 THEN 250
-            WHEN on_time_repayment_rate >= 0.85 THEN 100
+            WHEN COUNT(CASE WHEN ca.advance_status = 'DEFAULTED' THEN 1 END) > 0 THEN 0
+            WHEN DIV0NULL(
+                COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                COUNT(ca.advance_id)
+            ) >= 0.95 AND COUNT(ca.advance_id) >= 5 THEN 500
+            WHEN DIV0NULL(
+                COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                COUNT(ca.advance_id)
+            ) >= 0.90 AND COUNT(ca.advance_id) >= 3 THEN 250
+            WHEN DIV0NULL(
+                COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                COUNT(ca.advance_id)
+            ) >= 0.85 THEN 100
             ELSE 50
         END as recommended_advance_limit,
         
         -- Feature vector
         OBJECT_CONSTRUCT(
-            'total_advances', total_advances_taken,
-            'repayment_rate', on_time_repayment_rate,
-            'current_balance', current_advance_balance,
-            'risk_score', advance_risk_score,
-            'recommended_limit', recommended_advance_limit
+            'total_advances', COUNT(ca.advance_id),
+            'repayment_rate', DIV0NULL(
+                COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                COUNT(ca.advance_id)
+            ),
+            'current_balance', SUM(CASE WHEN ca.advance_status = 'ACTIVE' THEN ca.advance_amount + ca.fee_amount ELSE 0 END),
+            'risk_score', CASE 
+                WHEN COUNT(CASE WHEN ca.advance_status = 'DEFAULTED' THEN 1 END) > 0 THEN 0.9
+                WHEN COUNT(CASE WHEN ca.repayment_date > ca.due_date THEN 1 END) > 2 THEN 0.7
+                WHEN DIV0NULL(
+                    COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                    COUNT(ca.advance_id)
+                ) < 0.8 THEN 0.5
+                ELSE 0.2
+            END,
+            'recommended_limit', CASE 
+                WHEN COUNT(CASE WHEN ca.advance_status = 'DEFAULTED' THEN 1 END) > 0 THEN 0
+                WHEN DIV0NULL(
+                    COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                    COUNT(ca.advance_id)
+                ) >= 0.95 AND COUNT(ca.advance_id) >= 5 THEN 500
+                WHEN DIV0NULL(
+                    COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                    COUNT(ca.advance_id)
+                ) >= 0.90 AND COUNT(ca.advance_id) >= 3 THEN 250
+                WHEN DIV0NULL(
+                    COUNT(CASE WHEN ca.advance_status = 'REPAID' AND ca.repayment_date <= ca.due_date THEN 1 END),
+                    COUNT(ca.advance_id)
+                ) >= 0.85 THEN 100
+                ELSE 50
+            END
         ) as advance_features
         
     FROM VARO_INTELLIGENCE.RAW.CUSTOMERS c
@@ -387,19 +425,51 @@ CREATE OR REPLACE DYNAMIC TABLE FRAUD_DETECTION_FEATURES
         
         -- Aggregated risk score
         LEAST(1.0, (
-            has_unusual_amount * 0.3 +
-            impossible_travel_flag * 0.4 +
-            (rapid_fire_txn_count > 3) * 0.2 +
-            (risky_merchant_txn_count > 5) * 0.1
+            MAX(CASE 
+                WHEN ABS(amount) > avg_amount * 3 AND ABS(amount) > 100 THEN 1 
+                ELSE 0 
+            END) * 0.3 +
+            MAX(CASE 
+                WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 5 
+                    AND merchant_city != prev_merchant_city THEN 1 
+                ELSE 0 
+            END) * 0.4 +
+            (COUNT(CASE 
+                WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 1 THEN 1 
+            END) > 3) * 0.2 +
+            (SUM(CASE WHEN merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5) * 0.1
         )) as fraud_risk_score,
         
         -- Feature vector
         OBJECT_CONSTRUCT(
-            'unusual_amount', has_unusual_amount,
-            'impossible_travel', impossible_travel_flag,
-            'rapid_fire_count', rapid_fire_txn_count,
-            'risky_merchants', risky_merchant_txn_count,
-            'risk_score', fraud_risk_score
+            'unusual_amount', MAX(CASE 
+                WHEN ABS(amount) > avg_amount * 3 AND ABS(amount) > 100 THEN 1 
+                ELSE 0 
+            END),
+            'impossible_travel', MAX(CASE 
+                WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 5 
+                    AND merchant_city != prev_merchant_city THEN 1 
+                ELSE 0 
+            END),
+            'rapid_fire_count', COUNT(CASE 
+                WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 1 THEN 1 
+            END),
+            'risky_merchants', SUM(CASE WHEN merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END),
+            'risk_score', LEAST(1.0, (
+                MAX(CASE 
+                    WHEN ABS(amount) > avg_amount * 3 AND ABS(amount) > 100 THEN 1 
+                    ELSE 0 
+                END) * 0.3 +
+                MAX(CASE 
+                    WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 5 
+                        AND merchant_city != prev_merchant_city THEN 1 
+                    ELSE 0 
+                END) * 0.4 +
+                (COUNT(CASE 
+                    WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 1 THEN 1 
+                END) > 3) * 0.2 +
+                (SUM(CASE WHEN merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5) * 0.1
+            ))
         ) as fraud_features
         
     FROM recent_transactions t
