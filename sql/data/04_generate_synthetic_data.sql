@@ -736,39 +736,41 @@ FROM (
 -- ============================================================================
 
 -- Insert feature definitions
-INSERT INTO VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_DEFINITIONS VALUES
+INSERT INTO VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_DEFINITIONS 
+SELECT * FROM VALUES
 ('customer_txn_count_30d', 'Customer Transaction Count 30 Days', 'transaction_patterns', 'Number of transactions in last 30 days', 'NUMBER', 'BATCH', 
 'SELECT customer_id, COUNT(*) as value FROM transactions WHERE transaction_date >= DATEADD(day, -30, CURRENT_DATE()) GROUP BY customer_id',
-ARRAY_CONSTRUCT('transactions'), 'DAILY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+PARSE_JSON('["transactions"]'), 'DAILY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
 
 ('customer_txn_amount_30d', 'Customer Transaction Amount 30 Days', 'transaction_patterns', 'Total transaction amount in last 30 days', 'NUMBER', 'BATCH',
 'SELECT customer_id, SUM(ABS(amount)) as value FROM transactions WHERE transaction_date >= DATEADD(day, -30, CURRENT_DATE()) GROUP BY customer_id',
-ARRAY_CONSTRUCT('transactions'), 'DAILY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+PARSE_JSON('["transactions"]'), 'DAILY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
 
 ('customer_unique_merchants_30d', 'Customer Unique Merchants 30 Days', 'transaction_patterns', 'Number of unique merchants in last 30 days', 'NUMBER', 'BATCH',
 'SELECT customer_id, COUNT(DISTINCT merchant_name) as value FROM transactions WHERE transaction_date >= DATEADD(day, -30, CURRENT_DATE()) GROUP BY customer_id',
-ARRAY_CONSTRUCT('transactions'), 'DAILY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+PARSE_JSON('["transactions"]'), 'DAILY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
 
 ('customer_avg_daily_balance', 'Customer Average Daily Balance', 'customer_profile', 'Average daily balance across all accounts', 'NUMBER', 'STREAMING',
 'SELECT customer_id, AVG(current_balance) as value FROM accounts GROUP BY customer_id',
-ARRAY_CONSTRUCT('accounts'), 'REAL_TIME', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+PARSE_JSON('["accounts"]'), 'REAL_TIME', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
 
 ('customer_advance_utilization', 'Customer Cash Advance Utilization', 'risk_indicators', 'Percentage of advances used vs eligible', 'NUMBER', 'BATCH',
 'SELECT customer_id, COUNT(CASE WHEN advance_status != ''DEFAULTED'' THEN 1 END) / NULLIF(COUNT(*), 0) as value FROM cash_advances GROUP BY customer_id',
-ARRAY_CONSTRUCT('cash_advances'), 'DAILY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+PARSE_JSON('["cash_advances"]'), 'DAILY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
 
 ('customer_fraud_transaction_ratio', 'Customer Fraud Transaction Ratio', 'risk_indicators', 'Ratio of high fraud score transactions', 'NUMBER', 'STREAMING',
 'SELECT customer_id, AVG(CASE WHEN fraud_score > 0.5 THEN 1 ELSE 0 END) as value FROM transactions WHERE transaction_date >= DATEADD(day, -90, CURRENT_DATE()) GROUP BY customer_id',
-ARRAY_CONSTRUCT('transactions'), 'HOURLY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+PARSE_JSON('["transactions"]'), 'HOURLY', 1, TRUE, 'system', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 -- Insert feature sets
-INSERT INTO VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_SETS VALUES
+INSERT INTO VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_SETS 
+SELECT * FROM VALUES
 ('fraud_detection_v1', 'Fraud Detection Model V1', 'fraud_detection', 'Features for real-time fraud detection',
-ARRAY_CONSTRUCT('customer_txn_count_30d', 'customer_txn_amount_30d', 'customer_unique_merchants_30d', 'customer_fraud_transaction_ratio'),
+PARSE_JSON('["customer_txn_count_30d", "customer_txn_amount_30d", "customer_unique_merchants_30d", "customer_fraud_transaction_ratio"]'),
 TRUE, 'ml_team', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
 
 ('credit_risk_v1', 'Credit Risk Assessment V1', 'credit_risk', 'Features for credit limit and advance eligibility',
-ARRAY_CONSTRUCT('customer_avg_daily_balance', 'customer_advance_utilization', 'customer_txn_amount_30d'),
+PARSE_JSON('["customer_avg_daily_balance", "customer_advance_utilization", "customer_txn_amount_30d"]'),
 TRUE, 'ml_team', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 -- ============================================================================
@@ -845,18 +847,19 @@ CREATE OR REPLACE TABLE VARO_INTELLIGENCE.RAW.COMPLIANCE_DOCUMENTS (
 );
 
 -- Insert sample compliance documents
-INSERT INTO VARO_INTELLIGENCE.RAW.COMPLIANCE_DOCUMENTS VALUES
+INSERT INTO VARO_INTELLIGENCE.RAW.COMPLIANCE_DOCUMENTS 
+SELECT * FROM VALUES
 ('DOC001', 'POLICY', 'Anti-Money Laundering (AML) Policy', 
 'Varo Bank Anti-Money Laundering Policy\n\n1. Purpose\nThis policy establishes Varo Bank''s framework for preventing, detecting, and reporting money laundering activities.\n\n2. Customer Due Diligence\n- Identity verification required for all new accounts\n- Enhanced due diligence for high-risk customers\n- Ongoing monitoring of customer transactions\n\n3. Transaction Monitoring\n- Automated systems flag suspicious patterns\n- Daily reports reviewed by compliance team\n- Thresholds: Cash deposits over $10,000, Wire transfers over $3,000\n\n4. Reporting Requirements\n- SARs filed within 30 days of detection\n- CTRs for cash transactions over $10,000\n- Quarterly reports to board of directors',
-'2024-01-01', ARRAY_CONSTRUCT('AML', 'compliance', 'policy', 'monitoring'), CURRENT_TIMESTAMP()),
+'2024-01-01', PARSE_JSON('["AML", "compliance", "policy", "monitoring"]'), CURRENT_TIMESTAMP()),
 
 ('DOC002', 'PROCEDURE', 'Know Your Customer (KYC) Procedures',
 'KYC Verification Procedures\n\n1. Initial Verification\n- Government-issued ID required\n- SSN verification through credit bureaus\n- Address verification via utility bills or bank statements\n\n2. Risk Assessment\n- Low Risk: Standard verification\n- Medium Risk: Additional income verification\n- High Risk: Enhanced due diligence including source of funds\n\n3. Periodic Reviews\n- Low Risk: Every 3 years\n- Medium Risk: Annually\n- High Risk: Quarterly\n\n4. Red Flags\n- Multiple accounts with different addresses\n- Unusual transaction patterns\n- Connections to high-risk jurisdictions',
-'2024-01-15', ARRAY_CONSTRUCT('KYC', 'verification', 'risk', 'procedures'), CURRENT_TIMESTAMP()),
+'2024-01-15', PARSE_JSON('["KYC", "verification", "risk", "procedures"]'), CURRENT_TIMESTAMP()),
 
 ('DOC003', 'REGULATION', 'Regulation E Compliance Guide',
 'Electronic Fund Transfer Act (Regulation E) Compliance\n\n1. Error Resolution\n- Customer has 60 days to report errors\n- Bank must investigate within 10 business days\n- Provisional credit required if investigation exceeds 10 days\n\n2. Disclosure Requirements\n- Fee schedule must be provided at account opening\n- Change notifications sent 21 days in advance\n- Monthly statements required for accounts with EFT activity\n\n3. Unauthorized Transactions\n- Customer liability limited to $50 if reported within 2 days\n- Up to $500 if reported within 60 days\n- Unlimited liability after 60 days',
-'2024-02-01', ARRAY_CONSTRUCT('RegE', 'EFT', 'disputes', 'liability'), CURRENT_TIMESTAMP());
+'2024-02-01', PARSE_JSON('["RegE", "EFT", "disputes", "liability"]'), CURRENT_TIMESTAMP());
 
 -- Enable change tracking
 ALTER TABLE COMPLIANCE_DOCUMENTS SET CHANGE_TRACKING = TRUE;
