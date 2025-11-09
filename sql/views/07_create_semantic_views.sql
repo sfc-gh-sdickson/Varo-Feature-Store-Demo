@@ -77,8 +77,8 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CUSTOMER_BANKING_INTELLIGENCE
     customers.employment_status AS employment_status
       WITH SYNONYMS ('work status', 'job status')
       COMMENT = 'Employment status: EMPLOYED_FULL_TIME, EMPLOYED_PART_TIME, SELF_EMPLOYED, UNEMPLOYED, RETIRED, STUDENT',
-    customers.address_state AS state
-      WITH SYNONYMS ('customer state banking', 'residence state')
+    customers.address_state AS customer_state
+      WITH SYNONYMS ('customer state banking', 'residence state', 'customer location state')
       COMMENT = 'Customer state of residence',
     accounts.account_type AS account_type
       WITH SYNONYMS ('banking product type', 'account category')
