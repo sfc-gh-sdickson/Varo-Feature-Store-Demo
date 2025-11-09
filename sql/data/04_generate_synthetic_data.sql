@@ -427,11 +427,11 @@ FROM (
 CROSS JOIN LATERAL (
     SELECT 
         CASE frequency
-            WHEN 'WEEKLY' THEN DATEADD('week', week_num, base_date)
-            WHEN 'BIWEEKLY' THEN DATEADD('week', week_num * 2, base_date)
-            WHEN 'MONTHLY' THEN DATEADD('month', week_num, base_date)
+            WHEN 'WEEKLY' THEN DATEADD('week', ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1, base_date)
+            WHEN 'BIWEEKLY' THEN DATEADD('week', (ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1) * 2, base_date)
+            WHEN 'MONTHLY' THEN DATEADD('month', ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1, base_date)
         END AS deposit_date
-    FROM TABLE(GENERATOR(ROWCOUNT => 24)) AS g(week_num)
+    FROM TABLE(GENERATOR(ROWCOUNT => 24))
 ) AS deposit_dates
 WHERE deposit_date <= CURRENT_DATE();
 
