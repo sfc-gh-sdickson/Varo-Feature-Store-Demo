@@ -585,14 +585,6 @@ CROSS JOIN (
     SELECT ROW_NUMBER() OVER (ORDER BY SEQ4()) AS txn_num
     FROM TABLE(GENERATOR(ROWCOUNT => 10))
 ) AS txn_gen
-WHERE txn_num <= 
-    CASE 
-        WHEN UNIFORM(0, 100, RANDOM()) < 30 THEN 0  -- 30% no transactions
-        WHEN UNIFORM(0, 100, RANDOM()) < 60 THEN 1  -- 30% one transaction
-        WHEN UNIFORM(0, 100, RANDOM()) < 80 THEN 2  -- 20% two transactions
-        WHEN UNIFORM(0, 100, RANDOM()) < 90 THEN 3  -- 10% three transactions
-        ELSE UNIFORM(4, 10, RANDOM())               -- 10% many transactions
-    END
 CROSS JOIN (
     SELECT 
         merchant_name,
@@ -603,6 +595,14 @@ CROSS JOIN (
     FROM temp_merchants
     QUALIFY rn = 1
 ) AS m
+WHERE txn_num <= 
+    CASE 
+        WHEN UNIFORM(0, 100, RANDOM()) < 30 THEN 0  -- 30% no transactions
+        WHEN UNIFORM(0, 100, RANDOM()) < 60 THEN 1  -- 30% one transaction
+        WHEN UNIFORM(0, 100, RANDOM()) < 80 THEN 2  -- 20% two transactions
+        WHEN UNIFORM(0, 100, RANDOM()) < 90 THEN 3  -- 10% three transactions
+        ELSE UNIFORM(4, 10, RANDOM())               -- 10% many transactions
+    END
 LIMIT 50000000; -- Generate 50M transactions first (adjust as needed)
 
 -- ============================================================================
