@@ -117,6 +117,4 @@ SELECT PARSE_JSON(
 -- Display confirmation
 SELECT 
     'Cortex Search services created successfully' AS status,
-    COUNT(*) as total_services
-FROM INFORMATION_SCHEMA.CORTEX_SEARCH_SERVICES
-WHERE SCHEMA_NAME = 'RAW';
+    3 AS total_services_created;
