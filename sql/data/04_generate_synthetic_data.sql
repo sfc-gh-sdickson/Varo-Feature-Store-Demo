@@ -678,17 +678,17 @@ SELECT
         ELSE 'Other'
     END AS subcategory,
     UNIFORM(0, 100, RANDOM()) < 85 AS issue_resolved,
-    CASE interaction_type
+    CASE ARRAY_CONSTRUCT('CHAT', 'PHONE', 'EMAIL')[UNIFORM(0, 2, RANDOM())]
         WHEN 'CHAT' THEN UNIFORM(5, 30, RANDOM())
         WHEN 'PHONE' THEN UNIFORM(10, 45, RANDOM())
         WHEN 'EMAIL' THEN UNIFORM(60, 480, RANDOM())
     END AS resolution_time_minutes,
     'AGENT' || LPAD(UNIFORM(1, 100, RANDOM()), 3, '0') AS agent_id,
     CASE 
-        WHEN issue_resolved THEN UNIFORM(3, 5, RANDOM())
+        WHEN UNIFORM(0, 100, RANDOM()) < 85 THEN UNIFORM(3, 5, RANDOM())
         ELSE UNIFORM(1, 3, RANDOM())
     END AS satisfaction_score,
-    interaction_type IN ('CHAT', 'PHONE') AS transcript_available,
+    ARRAY_CONSTRUCT('CHAT', 'PHONE', 'EMAIL')[UNIFORM(0, 2, RANDOM())] IN ('CHAT', 'PHONE') AS transcript_available,
     CURRENT_TIMESTAMP() AS created_at
 FROM (
     SELECT 
