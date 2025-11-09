@@ -673,10 +673,10 @@ FROM (
         FROM DIRECT_DEPOSITS 
         GROUP BY customer_id
     ) dd ON c.customer_id = dd.customer_id
+    CROSS JOIN TABLE(GENERATOR(ROWCOUNT => 5)) -- Up to 5 advances per customer
     WHERE c.customer_status = 'ACTIVE'
         AND c.credit_score >= 600
         AND UNIFORM(0, 100, RANDOM()) < 30 -- 30% of eligible customers use advances
-    CROSS JOIN TABLE(GENERATOR(ROWCOUNT => 5)) -- Up to 5 advances per customer
     QUALIFY ROW_NUMBER() OVER (PARTITION BY c.customer_id ORDER BY RANDOM()) <= 
         CASE 
             WHEN UNIFORM(0, 100, RANDOM()) < 50 THEN 1
@@ -721,8 +721,8 @@ FROM (
         DATEADD('day', -1 * UNIFORM(1, 730, RANDOM()), CURRENT_DATE()) AS interaction_date,
         ARRAY_CONSTRUCT('ACCOUNT', 'TRANSACTION', 'CARD', 'ADVANCE', 'GENERAL')[UNIFORM(0, 4, RANDOM())] AS category
     FROM CUSTOMERS c
-    WHERE UNIFORM(0, 100, RANDOM()) < 40 -- 40% of customers contact support
     CROSS JOIN TABLE(GENERATOR(ROWCOUNT => 5))
+    WHERE UNIFORM(0, 100, RANDOM()) < 40 -- 40% of customers contact support
     QUALIFY ROW_NUMBER() OVER (PARTITION BY c.customer_id ORDER BY RANDOM()) <= 
         CASE 
             WHEN UNIFORM(0, 100, RANDOM()) < 60 THEN 1
