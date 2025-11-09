@@ -105,7 +105,7 @@ SELECT
          ELSE NULL 
     END AS churn_date,
     
-    ROUND(UNIFORM(0, 50000, RANDOM()) * (1 + UNIFORM(0, 10, RANDOM()) / 10), 2) AS lifetime_value,
+    ROUND(UNIFORM(0, 50000, RANDOM()) * (1.0 + UNIFORM(0, 10, RANDOM()) / 10.0), 2) AS lifetime_value,
     
     -- Credit score distribution (realistic)
     CASE 
@@ -133,7 +133,7 @@ SELECT
     'ACC' || LPAD(SEQ4(), 10, '0') AS account_id,
     customer_id,
     account_type,
-    LPAD(UNIFORM(1000000000, 9999999999, RANDOM()), 10, '0') AS account_number,
+    LPAD(UNIFORM(1000000000, 9999999999, RANDOM())::VARCHAR, 10, '0') AS account_number,
     '103112036' AS routing_number, -- Varo's actual routing number
     CASE 
         WHEN c.customer_status = 'CLOSED' THEN 'CLOSED'
@@ -174,19 +174,20 @@ SELECT
         WHEN account_type = 'BELIEVE_CARD' THEN 
             -ROUND(RANDOM() * 
                 CASE
-                    WHEN c.credit_score < 600 THEN 500 * 0.7
-                    WHEN c.credit_score < 700 THEN 1000 * 0.7
-                    WHEN c.credit_score < 750 THEN 2500 * 0.7
-                    ELSE 5000 * 0.7
+                    WHEN c.credit_score < 600 THEN 350.00
+                    WHEN c.credit_score < 700 THEN 700.00
+                    WHEN c.credit_score < 750 THEN 1750.00
+                    ELSE 3500.00
                 END, 2)
         WHEN account_type = 'LINE_OF_CREDIT' THEN 
             -ROUND(RANDOM() * 
                 CASE
-                    WHEN c.credit_score < 650 THEN 1000 * 0.5
-                    WHEN c.credit_score < 700 THEN 2000 * 0.5
-                    WHEN c.credit_score < 750 THEN 5000 * 0.5
-                    ELSE 10000 * 0.5
+                    WHEN c.credit_score < 650 THEN 500.00
+                    WHEN c.credit_score < 700 THEN 1000.00
+                    WHEN c.credit_score < 750 THEN 2500.00
+                    ELSE 5000.00
                 END, 2)
+        ELSE 0.00
     END AS current_balance,
     
     -- Available balance (calculated last)
@@ -196,39 +197,38 @@ SELECT
             CASE 
                 WHEN account_type = 'CHECKING' THEN ROUND(UNIFORM(0, 5000, RANDOM()), 2)
                 WHEN account_type = 'SAVINGS' THEN ROUND(UNIFORM(0, 25000, RANDOM()), 2)
+                ELSE 0.00
             END
-        ELSE 
+        WHEN account_type = 'BELIEVE_CARD' THEN 
             -- For credit accounts, available = limit - used (limit + negative balance)
-            CASE 
-                WHEN account_type = 'BELIEVE_CARD' THEN 
-                    CASE
-                        WHEN c.credit_score < 600 THEN 500
-                        WHEN c.credit_score < 700 THEN 1000
-                        WHEN c.credit_score < 750 THEN 2500
-                        ELSE 5000
-                    END -
-                    ROUND(RANDOM() * 
-                        CASE
-                            WHEN c.credit_score < 600 THEN 500 * 0.7
-                            WHEN c.credit_score < 700 THEN 1000 * 0.7
-                            WHEN c.credit_score < 750 THEN 2500 * 0.7
-                            ELSE 5000 * 0.7
-                        END, 2)
-                WHEN account_type = 'LINE_OF_CREDIT' THEN 
-                    CASE
-                        WHEN c.credit_score < 650 THEN 1000
-                        WHEN c.credit_score < 700 THEN 2000
-                        WHEN c.credit_score < 750 THEN 5000
-                        ELSE 10000
-                    END -
-                    ROUND(RANDOM() * 
-                        CASE
-                            WHEN c.credit_score < 650 THEN 1000 * 0.5
-                            WHEN c.credit_score < 700 THEN 2000 * 0.5
-                            WHEN c.credit_score < 750 THEN 5000 * 0.5
-                            ELSE 10000 * 0.5
-                        END, 2)
-            END
+            CASE
+                WHEN c.credit_score < 600 THEN 500.00
+                WHEN c.credit_score < 700 THEN 1000.00
+                WHEN c.credit_score < 750 THEN 2500.00
+                ELSE 5000.00
+            END -
+            ROUND(RANDOM() * 
+                CASE
+                    WHEN c.credit_score < 600 THEN 350.00
+                    WHEN c.credit_score < 700 THEN 700.00
+                    WHEN c.credit_score < 750 THEN 1750.00
+                    ELSE 3500.00
+                END, 2)
+        WHEN account_type = 'LINE_OF_CREDIT' THEN 
+            CASE
+                WHEN c.credit_score < 650 THEN 1000.00
+                WHEN c.credit_score < 700 THEN 2000.00
+                WHEN c.credit_score < 750 THEN 5000.00
+                ELSE 10000.00
+            END -
+            ROUND(RANDOM() * 
+                CASE
+                    WHEN c.credit_score < 650 THEN 500.00
+                    WHEN c.credit_score < 700 THEN 1000.00
+                    WHEN c.credit_score < 750 THEN 2500.00
+                    ELSE 5000.00
+                END, 2)
+        ELSE 0.00
     END AS available_balance,
     
     -- APY for savings accounts
