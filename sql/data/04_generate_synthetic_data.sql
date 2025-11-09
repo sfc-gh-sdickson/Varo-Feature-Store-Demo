@@ -359,22 +359,52 @@ SELECT
     
     deposit_date,
     CASE 
-        WHEN deposit_type = 'PAYROLL' AND frequency = 'BIWEEKLY' 
+        WHEN (CASE 
+                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
+                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
+                THEN 'GOVERNMENT'
+                WHEN employer_name IS NULL THEN 'OTHER'
+                ELSE 'PAYROLL'
+            END) = 'PAYROLL' AND frequency = 'BIWEEKLY' 
         THEN DATEADD('day', -2, deposit_date)
         ELSE deposit_date
     END AS expected_date,
     
     CASE 
-        WHEN deposit_type = 'PAYROLL' THEN ROUND(UNIFORM(1000, 5000, RANDOM()), -1)
-        WHEN deposit_type = 'GOVERNMENT' THEN ROUND(UNIFORM(500, 2000, RANDOM()), -1)
+        WHEN (CASE 
+                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
+                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
+                THEN 'GOVERNMENT'
+                WHEN employer_name IS NULL THEN 'OTHER'
+                ELSE 'PAYROLL'
+            END) = 'PAYROLL' THEN ROUND(UNIFORM(1000, 5000, RANDOM()), -1)
+        WHEN (CASE 
+                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
+                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
+                THEN 'GOVERNMENT'
+                WHEN employer_name IS NULL THEN 'OTHER'
+                ELSE 'PAYROLL'
+            END) = 'GOVERNMENT' THEN ROUND(UNIFORM(500, 2000, RANDOM()), -1)
         ELSE ROUND(UNIFORM(100, 1000, RANDOM()), -1)
     END AS amount,
     
     TRUE AS is_recurring,
     frequency,
-    deposit_type = 'PAYROLL' AS early_access_eligible,
+    (CASE 
+        WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
+             OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
+        THEN 'GOVERNMENT'
+        WHEN employer_name IS NULL THEN 'OTHER'
+        ELSE 'PAYROLL'
+    END) = 'PAYROLL' AS early_access_eligible,
     CASE 
-        WHEN early_access_eligible AND UNIFORM(0, 100, RANDOM()) < 70 
+        WHEN (CASE 
+                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
+                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
+                THEN 'GOVERNMENT'
+                WHEN employer_name IS NULL THEN 'OTHER'
+                ELSE 'PAYROLL'
+            END) = 'PAYROLL' AND UNIFORM(0, 100, RANDOM()) < 70 
         THEN TRUE 
         ELSE FALSE 
     END AS early_access_used,
