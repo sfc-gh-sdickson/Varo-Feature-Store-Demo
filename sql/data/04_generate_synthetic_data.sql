@@ -11,6 +11,30 @@ USE SCHEMA RAW;
 USE WAREHOUSE VARO_FEATURE_WH; -- Use larger warehouse for data generation
 
 -- ============================================================================
+-- Truncate all tables to ensure clean data load
+-- ============================================================================
+TRUNCATE TABLE IF EXISTS VARO_INTELLIGENCE.RAW.SUPPORT_TRANSCRIPTS;
+TRUNCATE TABLE IF EXISTS VARO_INTELLIGENCE.RAW.COMPLIANCE_DOCUMENTS;
+TRUNCATE TABLE IF EXISTS VARO_INTELLIGENCE.RAW.PRODUCT_KNOWLEDGE;
+TRUNCATE TABLE IF EXISTS VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_VALUES;
+TRUNCATE TABLE IF EXISTS VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_SETS;
+TRUNCATE TABLE IF EXISTS VARO_INTELLIGENCE.FEATURE_STORE.FEATURE_DEFINITIONS;
+TRUNCATE TABLE IF EXISTS SUPPORT_INTERACTIONS;
+TRUNCATE TABLE IF EXISTS CASH_ADVANCES;
+TRUNCATE TABLE IF EXISTS DIRECT_DEPOSITS;
+TRUNCATE TABLE IF EXISTS TRANSACTIONS;
+TRUNCATE TABLE IF EXISTS CARDS;
+TRUNCATE TABLE IF EXISTS CUSTOMER_CAMPAIGNS;
+TRUNCATE TABLE IF EXISTS MARKETING_CAMPAIGNS;
+TRUNCATE TABLE IF EXISTS ACCOUNTS;
+TRUNCATE TABLE IF EXISTS CUSTOMERS;
+TRUNCATE TABLE IF EXISTS COMPLIANCE_EVENTS;
+TRUNCATE TABLE IF EXISTS EXTERNAL_DATA;
+TRUNCATE TABLE IF EXISTS CREDIT_APPLICATIONS;
+TRUNCATE TABLE IF EXISTS DEVICE_SESSIONS;
+TRUNCATE TABLE IF EXISTS MERCHANT_CATEGORIES;
+
+-- ============================================================================
 -- Step 1: Generate Merchant Categories
 -- ============================================================================
 INSERT INTO MERCHANT_CATEGORIES VALUES
@@ -340,8 +364,8 @@ FROM (
 INSERT INTO DIRECT_DEPOSITS
 SELECT
     'DD' || LPAD(SEQ4(), 10, '0') AS deposit_id,
-    a.account_id,
-    a.customer_id,
+    deposit_accounts.account_id,
+    deposit_accounts.customer_id,
     ARRAY_CONSTRUCT(
         'Amazon', 'Google', 'Apple', 'Microsoft', 'Facebook', 'Netflix', 'Uber', 'Lyft',
         'DoorDash', 'Instacart', 'Walmart', 'Target', 'Costco', 'Starbucks', 'McDonalds',
@@ -365,7 +389,7 @@ SELECT
                 THEN 'GOVERNMENT'
                 WHEN employer_name IS NULL THEN 'OTHER'
                 ELSE 'PAYROLL'
-            END) = 'PAYROLL' AND frequency = 'BIWEEKLY' 
+            END) = 'PAYROLL' AND deposit_accounts.frequency = 'BIWEEKLY' 
         THEN DATEADD('day', -2, deposit_date)
         ELSE deposit_date
     END AS expected_date,
@@ -389,7 +413,7 @@ SELECT
     END AS amount,
     
     TRUE AS is_recurring,
-    frequency,
+    deposit_accounts.frequency,
     (CASE 
         WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
              OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
@@ -426,10 +450,10 @@ FROM (
 ) AS deposit_accounts
 CROSS JOIN LATERAL (
     SELECT 
-        CASE frequency
-            WHEN 'WEEKLY' THEN DATEADD('week', ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1, base_date)
-            WHEN 'BIWEEKLY' THEN DATEADD('week', (ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1) * 2, base_date)
-            WHEN 'MONTHLY' THEN DATEADD('month', ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1, base_date)
+        CASE deposit_accounts.frequency
+            WHEN 'WEEKLY' THEN DATEADD('week', ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1, deposit_accounts.base_date)
+            WHEN 'BIWEEKLY' THEN DATEADD('week', (ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1) * 2, deposit_accounts.base_date)
+            WHEN 'MONTHLY' THEN DATEADD('month', ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1, deposit_accounts.base_date)
         END AS deposit_date
     FROM TABLE(GENERATOR(ROWCOUNT => 24))
 ) AS deposit_dates
