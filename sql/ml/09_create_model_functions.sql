@@ -59,7 +59,7 @@ $$
             ELSE 'MINIMAL'
         END as risk_level,
         -- Generate reason codes
-        ARRAY_AGG(reason) FILTER (WHERE reason IS NOT NULL) as reason_codes
+        ARRAY_AGG(CASE WHEN reason IS NOT NULL THEN reason END) as reason_codes
     FROM (
         SELECT 
             rc.fraud_probability,
@@ -175,7 +175,7 @@ $$
         is_eligible,
         max_advance_amount,
         eligibility_score,
-        ARRAY_AGG(reason) FILTER (WHERE reason IS NOT NULL) as decline_reasons
+        ARRAY_AGG(CASE WHEN reason IS NOT NULL THEN reason END) as decline_reasons
     FROM (
         SELECT 
             is_eligible,
