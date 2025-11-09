@@ -310,13 +310,16 @@ CREATE OR REPLACE TABLE COMPLIANCE_EVENTS (
 );
 
 -- ============================================================================
--- Create indexes for performance
+-- Optimize tables for performance using clustering
 -- ============================================================================
-CREATE OR REPLACE INDEX idx_transactions_customer ON TRANSACTIONS(customer_id);
-CREATE OR REPLACE INDEX idx_transactions_date ON TRANSACTIONS(transaction_date);
-CREATE OR REPLACE INDEX idx_accounts_customer ON ACCOUNTS(customer_id);
-CREATE OR REPLACE INDEX idx_cards_customer ON CARDS(customer_id);
-CREATE OR REPLACE INDEX idx_advances_customer ON CASH_ADVANCES(customer_id);
+-- In Snowflake, we use clustering instead of indexes for query optimization
+ALTER TABLE TRANSACTIONS CLUSTER BY (customer_id, transaction_date);
+ALTER TABLE ACCOUNTS CLUSTER BY (customer_id);
+ALTER TABLE CARDS CLUSTER BY (customer_id);
+ALTER TABLE CASH_ADVANCES CLUSTER BY (customer_id);
+
+-- Note: Clustering keys automatically optimize query performance
+-- Snowflake's micro-partitions and pruning eliminate the need for traditional indexes
 
 -- Display confirmation
 SELECT 'Core banking tables created successfully' AS STATUS;

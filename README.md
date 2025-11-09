@@ -306,3 +306,10 @@ For questions or assistance:
 
 **ALL SQL SYNTAX VERIFIED** ✅  
 **FEATURE STORE PATTERNS TESTED** ✅
+
+## Important Note on Indexes
+
+Snowflake does not support traditional CREATE INDEX syntax on regular tables. Instead, this demo uses:
+- **CLUSTER BY** for optimizing query performance on frequently filtered columns
+- **SEARCH OPTIMIZATION** for point lookups in the Feature Store
+- See `docs/SNOWFLAKE_OPTIMIZATION_NOTES.md` for details
