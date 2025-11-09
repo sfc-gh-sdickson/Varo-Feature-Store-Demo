@@ -805,7 +805,7 @@ SELECT
     'Customer: ' || 
     CASE si.category
         WHEN 'ACCOUNT' THEN 'I am having trouble logging into my account. I have tried resetting my password but the email is not coming through. Can you help me access my account?'
-        WHEN 'TRANSACTION' THEN 'I see a charge on my account that I do not recognize. The amount is $' || ROUND(UNIFORM(50, 500, RANDOM()), 2) || ' from ' || merchant_name || '. I did not make this purchase.'
+        WHEN 'TRANSACTION' THEN 'I see a charge on my account that I do not recognize. The amount is $' || ROUND(UNIFORM(50, 500, RANDOM()), 2) || ' from ' || m.merchant_name || '. I did not make this purchase.'
         WHEN 'CARD' THEN 'My card was declined at the store today even though I have sufficient funds. The card is not expired. What could be the issue?'
         WHEN 'ADVANCE' THEN 'I need to request a cash advance but the app says I am not eligible. I have been a customer for over a year and have direct deposit. Why am I not eligible?'
         ELSE 'I have a general question about my account and the fees associated with international transactions.'
