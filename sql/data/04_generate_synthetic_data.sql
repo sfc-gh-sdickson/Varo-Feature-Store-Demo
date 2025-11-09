@@ -569,10 +569,13 @@ FROM (
         dd.employer_name,
         dd.deposit_date
     FROM ACCOUNTS a
+    CROSS JOIN (
+        SELECT ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1 AS day_offset
+        FROM TABLE(GENERATOR(ROWCOUNT => 730)) -- 2 years of days
+    ) AS day_offsets
     LEFT JOIN DIRECT_DEPOSITS dd 
         ON a.account_id = dd.account_id
         AND dd.deposit_date = DATEADD('day', -1 * day_offset, CURRENT_DATE())
-    CROSS JOIN TABLE(GENERATOR(ROWCOUNT => 730)) AS g(day_offset) -- 2 years of days
     WHERE a.account_type IN ('CHECKING', 'BELIEVE_CARD')
         AND a.opening_date <= DATEADD('day', -1 * day_offset, CURRENT_DATE())
         AND (a.closing_date IS NULL OR a.closing_date >= DATEADD('day', -1 * day_offset, CURRENT_DATE()))
