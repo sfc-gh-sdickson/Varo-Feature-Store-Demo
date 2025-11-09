@@ -252,10 +252,10 @@ CREATE OR REPLACE SEMANTIC VIEW SV_TRANSACTION_PAYMENT_INTELLIGENCE
     merchant_categories.high_risk_category AS high_risk_category
       WITH SYNONYMS ('risky merchant type', 'high risk business')
       COMMENT = 'Whether category is considered high risk',
-    accounts.account_type AS account_type_txn
+    accounts.account_type AS account_type
       WITH SYNONYMS ('source account type', 'payment account type')
       COMMENT = 'Type of account used for transaction',
-    customers.customer_status AS customer_status_txn
+    customers.customer_status AS customer_status
       WITH SYNONYMS ('payer status', 'transactor status')
       COMMENT = 'Status of customer making transaction'
   )
@@ -350,7 +350,7 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CREDIT_RISK_INTELLIGENCE
     compliance_events(customer_id) REFERENCES customers(customer_id)
   )
   DIMENSIONS (
-    credit_applications.product_type AS product_type_applied
+    credit_applications.product_type AS product_type
       WITH SYNONYMS ('credit product applied', 'loan type requested')
       COMMENT = 'Credit product type: BELIEVE_CARD, LINE_OF_CREDIT',
     credit_applications.application_status AS application_status
@@ -359,22 +359,22 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CREDIT_RISK_INTELLIGENCE
     credit_applications.decision_reason_codes AS decision_reason_codes
       WITH SYNONYMS ('decline reasons', 'credit decision factors')
       COMMENT = 'Reason codes for credit decision',
-    cash_advances.advance_status AS advance_repayment_status
+    cash_advances.advance_status AS advance_status
       WITH SYNONYMS ('loan repayment status', 'advance collection status')
       COMMENT = 'Cash advance status: ACTIVE, REPAID, DEFAULTED',
-    accounts.account_type AS credit_account_type
+    accounts.account_type AS account_type
       WITH SYNONYMS ('credit product type risk', 'lending account type')
       COMMENT = 'Type of credit account',
     accounts.credit_limit AS credit_limit
       WITH SYNONYMS ('credit line amount', 'lending limit')
       COMMENT = 'Credit limit for account',
-    customers.credit_score AS customer_credit_score
+    customers.credit_score AS credit_score
       WITH SYNONYMS ('fico score risk', 'credit rating')
       COMMENT = 'Customer credit score',
-    customers.risk_tier AS customer_risk_tier
+    customers.risk_tier AS risk_tier
       WITH SYNONYMS ('risk segment', 'credit risk level')
       COMMENT = 'Customer risk tier classification',
-    customers.employment_status AS employment_status_risk
+    customers.employment_status AS employment_status
       WITH SYNONYMS ('job status risk', 'income stability')
       COMMENT = 'Employment status for risk assessment',
     external_data.data_source AS external_data_source
