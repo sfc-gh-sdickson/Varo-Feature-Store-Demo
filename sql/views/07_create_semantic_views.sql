@@ -377,16 +377,16 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CREDIT_RISK_INTELLIGENCE
     customers.employment_status AS employment_status
       WITH SYNONYMS ('job status risk', 'income stability')
       COMMENT = 'Employment status for risk assessment',
-    external_data.data_source AS external_data_source
+    external_data.data_source AS data_source
       WITH SYNONYMS ('bureau source', 'verification provider')
       COMMENT = 'Source of external data: EQUIFAX, EXPERIAN, PLAID',
-    external_data.data_type AS external_data_type
+    external_data.data_type AS data_type
       WITH SYNONYMS ('verification type', 'external check type')
       COMMENT = 'Type of external data: CREDIT_REPORT, BANK_VERIFICATION, INCOME_VERIFICATION',
-    compliance_events.event_type AS compliance_event_type
+    compliance_events.event_type AS event_type
       WITH SYNONYMS ('regulatory event type', 'compliance issue type')
       COMMENT = 'Compliance event type: SAR, CTR, KYC_UPDATE, OFAC_HIT',
-    compliance_events.severity AS compliance_severity
+    compliance_events.severity AS severity
       WITH SYNONYMS ('event severity', 'risk severity level')
       COMMENT = 'Severity of compliance event'
   )
