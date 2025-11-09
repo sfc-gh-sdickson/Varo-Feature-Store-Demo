@@ -77,8 +77,8 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CUSTOMER_BANKING_INTELLIGENCE
     customers.employment_status AS employment_status
       WITH SYNONYMS ('work status', 'job status')
       COMMENT = 'Employment status: EMPLOYED_FULL_TIME, EMPLOYED_PART_TIME, SELF_EMPLOYED, UNEMPLOYED, RETIRED, STUDENT',
-    customers.address_state AS customer_state
-      WITH SYNONYMS ('customer state banking', 'residence state', 'customer location state')
+    customers.address_state AS address_state
+      WITH SYNONYMS ('customer state banking', 'residence state', 'state')
       COMMENT = 'Customer state of residence',
     accounts.account_type AS account_type
       WITH SYNONYMS ('banking product type', 'account category')
@@ -107,7 +107,7 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CUSTOMER_BANKING_INTELLIGENCE
     support_interactions.interaction_type AS interaction_type
       WITH SYNONYMS ('contact method', 'support channel')
       COMMENT = 'Support interaction type: CHAT, PHONE, EMAIL',
-    support_interactions.category AS support_category
+    support_interactions.category AS category
       WITH SYNONYMS ('issue category', 'support topic', 'interaction category')
       COMMENT = 'Support category: ACCOUNT, TRANSACTION, CARD, ADVANCE, GENERAL'
   )
@@ -237,7 +237,7 @@ CREATE OR REPLACE SEMANTIC VIEW SV_TRANSACTION_PAYMENT_INTELLIGENCE
     transactions.is_international AS is_international
       WITH SYNONYMS ('foreign transaction', 'international payment')
       COMMENT = 'Whether transaction is international',
-    transactions.status AS transaction_status
+    transactions.status AS status
       WITH SYNONYMS ('transaction status', 'payment state', 'txn status')
       COMMENT = 'Transaction status: COMPLETED, DECLINED, PENDING',
     merchant_categories.category_name AS category_name
