@@ -172,21 +172,21 @@ SELECT
         WHEN account_type = 'CHECKING' THEN ROUND(UNIFORM(0, 5000, RANDOM()) * POWER(RANDOM(), 2), 2)
         WHEN account_type = 'SAVINGS' THEN ROUND(UNIFORM(0, 25000, RANDOM()) * POWER(RANDOM(), 1.5), 2)
         WHEN account_type = 'BELIEVE_CARD' THEN 
-            -ROUND(UNIFORM(0, 
+            -ROUND(RANDOM() * 
                 CASE
                     WHEN c.credit_score < 600 THEN 500 * 0.7
                     WHEN c.credit_score < 700 THEN 1000 * 0.7
                     WHEN c.credit_score < 750 THEN 2500 * 0.7
                     ELSE 5000 * 0.7
-                END, RANDOM()), 2)
+                END, 2)
         WHEN account_type = 'LINE_OF_CREDIT' THEN 
-            -ROUND(UNIFORM(0, 
+            -ROUND(RANDOM() * 
                 CASE
                     WHEN c.credit_score < 650 THEN 1000 * 0.5
                     WHEN c.credit_score < 700 THEN 2000 * 0.5
                     WHEN c.credit_score < 750 THEN 5000 * 0.5
                     ELSE 10000 * 0.5
-                END, RANDOM()), 2)
+                END, 2)
     END AS current_balance,
     
     -- Available balance (calculated last)
@@ -207,13 +207,13 @@ SELECT
                         WHEN c.credit_score < 750 THEN 2500
                         ELSE 5000
                     END -
-                    ROUND(UNIFORM(0, 
+                    ROUND(RANDOM() * 
                         CASE
                             WHEN c.credit_score < 600 THEN 500 * 0.7
                             WHEN c.credit_score < 700 THEN 1000 * 0.7
                             WHEN c.credit_score < 750 THEN 2500 * 0.7
                             ELSE 5000 * 0.7
-                        END, RANDOM()), 2)
+                        END, 2)
                 WHEN account_type = 'LINE_OF_CREDIT' THEN 
                     CASE
                         WHEN c.credit_score < 650 THEN 1000
@@ -221,13 +221,13 @@ SELECT
                         WHEN c.credit_score < 750 THEN 5000
                         ELSE 10000
                     END -
-                    ROUND(UNIFORM(0, 
+                    ROUND(RANDOM() * 
                         CASE
                             WHEN c.credit_score < 650 THEN 1000 * 0.5
                             WHEN c.credit_score < 700 THEN 2000 * 0.5
                             WHEN c.credit_score < 750 THEN 5000 * 0.5
                             ELSE 10000 * 0.5
-                        END, RANDOM()), 2)
+                        END, 2)
             END
     END AS available_balance,
     
