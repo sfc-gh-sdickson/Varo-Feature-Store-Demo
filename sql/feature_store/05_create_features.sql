@@ -577,6 +577,8 @@ BEGIN
     FETCH cursor2 INTO entity_count;
     CLOSE cursor2;
     
+    LET is_stratified BOOLEAN := (:stratify_column IS NOT NULL);
+    
     INSERT INTO TRAINING_DATASETS 
     (dataset_id, dataset_name, model_name, feature_set_id, label_query, start_date, end_date, num_entities, num_examples, table_name, stratified, train_test_split, created_by, created_at)
     SELECT
@@ -590,7 +592,7 @@ BEGIN
         :entity_count,
         :row_count,
         :table_name,
-        :stratify_column IS NOT NULL,
+        :is_stratified,
         0.8,
         CURRENT_USER(),
         CURRENT_TIMESTAMP();
@@ -616,10 +618,11 @@ DECLARE
 BEGIN
     -- Parse importance data and update MODEL_FEATURES table
     INSERT INTO MODEL_FEATURES 
+    (feature_model_id, model_name, model_version, feature_name, importance_score, importance_type, created_at)
     SELECT
-        'MF_' || model_name || '_' || feature_name || '_' || CURRENT_TIMESTAMP(),
-        model_name,
-        model_version,
+        'MF_' || :model_name || '_' || feature_name || '_' || TO_CHAR(CURRENT_TIMESTAMP(), 'YYYYMMDDHH24MISS'),
+        :model_name,
+        :model_version,
         feature_name,
         importance_value,
         'INPUT',
@@ -628,12 +631,12 @@ BEGIN
         SELECT 
             KEY as feature_name,
             VALUE::NUMBER(5,4) as importance_value
-        FROM TABLE(FLATTEN(input => importance_data))
+        FROM TABLE(FLATTEN(input => :importance_data))
     );
     
     -- Get count from FLATTEN result
     SELECT COUNT(*) INTO feature_count
-    FROM TABLE(FLATTEN(input => importance_data));
+    FROM TABLE(FLATTEN(input => :importance_data));
     
     RETURN 'Updated importance for ' || feature_count || ' features';
 END;
