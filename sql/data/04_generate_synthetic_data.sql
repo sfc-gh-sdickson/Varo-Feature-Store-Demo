@@ -364,100 +364,104 @@ FROM (
 INSERT INTO DIRECT_DEPOSITS
 SELECT
     'DD' || LPAD(SEQ4(), 10, '0') AS deposit_id,
-    deposit_accounts.account_id,
-    deposit_accounts.customer_id,
-    ARRAY_CONSTRUCT(
-        'Amazon', 'Google', 'Apple', 'Microsoft', 'Facebook', 'Netflix', 'Uber', 'Lyft',
-        'DoorDash', 'Instacart', 'Walmart', 'Target', 'Costco', 'Starbucks', 'McDonalds',
-        'US Government', 'State of California', 'City of New York', 'Veterans Affairs',
-        'Social Security Admin', 'Unemployment Insurance', NULL
-    )[UNIFORM(0, 21, RANDOM())] AS employer_name,
-    
-    CASE 
-        WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
-             OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
-        THEN 'GOVERNMENT'
-        WHEN employer_name IS NULL THEN 'OTHER'
-        ELSE 'PAYROLL'
-    END AS deposit_type,
-    
+    account_id,
+    customer_id,
+    employer_name,
+    deposit_type,
     deposit_date,
-    CASE 
-        WHEN (CASE 
-                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
-                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
-                THEN 'GOVERNMENT'
-                WHEN employer_name IS NULL THEN 'OTHER'
-                ELSE 'PAYROLL'
-            END) = 'PAYROLL' AND deposit_accounts.frequency = 'BIWEEKLY' 
-        THEN DATEADD('day', -2, deposit_date)
-        ELSE deposit_date
-    END AS expected_date,
-    
-    CASE 
-        WHEN (CASE 
-                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
-                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
-                THEN 'GOVERNMENT'
-                WHEN employer_name IS NULL THEN 'OTHER'
-                ELSE 'PAYROLL'
-            END) = 'PAYROLL' THEN ROUND(UNIFORM(1000, 5000, RANDOM()), -1)
-        WHEN (CASE 
-                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
-                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
-                THEN 'GOVERNMENT'
-                WHEN employer_name IS NULL THEN 'OTHER'
-                ELSE 'PAYROLL'
-            END) = 'GOVERNMENT' THEN ROUND(UNIFORM(500, 2000, RANDOM()), -1)
-        ELSE ROUND(UNIFORM(100, 1000, RANDOM()), -1)
-    END AS amount,
-    
+    expected_date,
+    amount,
     TRUE AS is_recurring,
-    deposit_accounts.frequency,
-    (CASE 
-        WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
-             OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
-        THEN 'GOVERNMENT'
-        WHEN employer_name IS NULL THEN 'OTHER'
-        ELSE 'PAYROLL'
-    END) = 'PAYROLL' AS early_access_eligible,
-    CASE 
-        WHEN (CASE 
-                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
-                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
-                THEN 'GOVERNMENT'
-                WHEN employer_name IS NULL THEN 'OTHER'
-                ELSE 'PAYROLL'
-            END) = 'PAYROLL' AND UNIFORM(0, 100, RANDOM()) < 70 
-        THEN TRUE 
-        ELSE FALSE 
-    END AS early_access_used,
-    
+    frequency,
+    early_access_eligible,
+    early_access_used,
     CURRENT_TIMESTAMP() AS created_at
 FROM (
     SELECT 
-        a.*,
-        DATEADD('day', -1 * UNIFORM(0, 730, RANDOM()), CURRENT_DATE()) AS base_date,
-        ARRAY_CONSTRUCT('WEEKLY', 'BIWEEKLY', 'MONTHLY')[UNIFORM(0, 2, RANDOM())] AS frequency
-    FROM ACCOUNTS a
-    WHERE a.account_type = 'CHECKING'
-        AND a.customer_id IN (
-            SELECT customer_id 
-            FROM CUSTOMERS 
-            WHERE employment_status IN ('EMPLOYED_FULL_TIME', 'EMPLOYED_PART_TIME', 'SELF_EMPLOYED', 'RETIRED')
-            AND UNIFORM(0, 100, RANDOM()) < 80 -- 80% have direct deposit
-        )
-) AS deposit_accounts
-CROSS JOIN LATERAL (
-    SELECT 
-        CASE deposit_accounts.frequency
-            WHEN 'WEEKLY' THEN DATEADD('week', ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1, deposit_accounts.base_date)
-            WHEN 'BIWEEKLY' THEN DATEADD('week', (ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1) * 2, deposit_accounts.base_date)
-            WHEN 'MONTHLY' THEN DATEADD('month', ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1, deposit_accounts.base_date)
-        END AS deposit_date
-    FROM TABLE(GENERATOR(ROWCOUNT => 24))
-) AS deposit_dates
-WHERE deposit_date <= CURRENT_DATE();
+        account_id,
+        customer_id,
+        employer_name,
+        deposit_type,
+        deposit_date,
+        CASE 
+            WHEN deposit_type = 'PAYROLL' AND frequency = 'BIWEEKLY' 
+            THEN DATEADD('day', -2, deposit_date)
+            ELSE deposit_date
+        END AS expected_date,
+        CASE 
+            WHEN deposit_type = 'PAYROLL' THEN ROUND(UNIFORM(1000, 5000, RANDOM()), -1)
+            WHEN deposit_type = 'GOVERNMENT' THEN ROUND(UNIFORM(500, 2000, RANDOM()), -1)
+            ELSE ROUND(UNIFORM(100, 1000, RANDOM()), -1)
+        END AS amount,
+        frequency,
+        deposit_type = 'PAYROLL' AS early_access_eligible,
+        CASE 
+            WHEN deposit_type = 'PAYROLL' AND UNIFORM(0, 100, RANDOM()) < 70 
+            THEN TRUE 
+            ELSE FALSE 
+        END AS early_access_used
+    FROM (
+        SELECT 
+            a.account_id,
+            a.customer_id,
+            employer_name,
+            CASE 
+                WHEN employer_name LIKE '%Government%' OR employer_name LIKE '%Security%' 
+                     OR employer_name LIKE '%Veterans%' OR employer_name LIKE '%Unemployment%'
+                THEN 'GOVERNMENT'
+                WHEN employer_name IS NULL THEN 'OTHER'
+                ELSE 'PAYROLL'
+            END AS deposit_type,
+            deposit_date,
+            frequency
+        FROM (
+            SELECT 
+                a.account_id,
+                a.customer_id,
+                ARRAY_CONSTRUCT(
+                    'Amazon', 'Google', 'Apple', 'Microsoft', 'Facebook', 'Netflix', 'Uber', 'Lyft',
+                    'DoorDash', 'Instacart', 'Walmart', 'Target', 'Costco', 'Starbucks', 'McDonalds',
+                    'US Government', 'State of California', 'City of New York', 'Veterans Affairs',
+                    'Social Security Admin', 'Unemployment Insurance', NULL
+                )[UNIFORM(0, 21, RANDOM())] AS employer_name,
+                deposit_date,
+                frequency
+            FROM (
+        SELECT 
+            a.*,
+            base_date,
+            frequency,
+            CASE frequency
+                WHEN 'WEEKLY' THEN DATEADD('week', week_num, base_date)
+                WHEN 'BIWEEKLY' THEN DATEADD('week', week_num * 2, base_date)
+                WHEN 'MONTHLY' THEN DATEADD('month', week_num, base_date)
+            END AS deposit_date
+        FROM (
+            SELECT 
+                a.*,
+                DATEADD('day', -1 * UNIFORM(0, 730, RANDOM()), CURRENT_DATE()) AS base_date,
+                ARRAY_CONSTRUCT('WEEKLY', 'BIWEEKLY', 'MONTHLY')[UNIFORM(0, 2, RANDOM())] AS frequency
+            FROM ACCOUNTS a
+            WHERE a.account_type = 'CHECKING'
+                AND a.customer_id IN (
+                    SELECT customer_id 
+                    FROM CUSTOMERS 
+                    WHERE employment_status IN ('EMPLOYED_FULL_TIME', 'EMPLOYED_PART_TIME', 'SELF_EMPLOYED', 'RETIRED')
+                    AND UNIFORM(0, 100, RANDOM()) < 80 -- 80% have direct deposit
+                )
+            ) AS account_data
+            CROSS JOIN (
+                SELECT ROW_NUMBER() OVER (ORDER BY SEQ4()) - 1 AS week_num
+                FROM TABLE(GENERATOR(ROWCOUNT => 24))
+            ) AS periods
+            WHERE CASE frequency
+                WHEN 'WEEKLY' THEN DATEADD('week', week_num, base_date)
+                WHEN 'BIWEEKLY' THEN DATEADD('week', week_num * 2, base_date)
+                WHEN 'MONTHLY' THEN DATEADD('month', week_num, base_date)
+            END <= CURRENT_DATE()
+        ) AS with_deposit_date
+    ) AS with_deposit_type
+) AS final_deposits;
 
 -- ============================================================================
 -- Step 7: Generate Transactions (500M - this will take time)
