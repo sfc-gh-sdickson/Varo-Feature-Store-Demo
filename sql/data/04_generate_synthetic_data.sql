@@ -308,12 +308,12 @@ SELECT
     budget,
     expected_roi,
     CASE 
-        WHEN end_date < CURRENT_DATE() THEN ROUND(expected_roi * (0.7 + RANDOM() * 0.6), 2)
+        WHEN DATEADD('day', duration_days, start_date) < CURRENT_DATE() THEN ROUND(expected_roi * UNIFORM(70, 130, RANDOM()) / 100.0, 2)
         ELSE NULL
     END AS actual_roi,
     CASE 
         WHEN start_date > CURRENT_DATE() THEN 'PLANNED'
-        WHEN end_date < CURRENT_DATE() THEN 'COMPLETED'
+        WHEN DATEADD('day', duration_days, start_date) < CURRENT_DATE() THEN 'COMPLETED'
         ELSE 'ACTIVE'
     END AS campaign_status,
     CURRENT_TIMESTAMP() AS created_at,
