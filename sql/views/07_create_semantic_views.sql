@@ -20,27 +20,27 @@ USE WAREHOUSE VARO_WH;
 -- ============================================================================
 CREATE OR REPLACE SEMANTIC VIEW SV_CUSTOMER_BANKING_INTELLIGENCE
   TABLES (
-    customers AS RAW.CUSTOMERS
+    RAW.CUSTOMERS AS customers
       PRIMARY KEY (customer_id)
       WITH SYNONYMS ('bank customers', 'account holders', 'varo users')
       COMMENT = 'Varo bank customers and account holders',
-    accounts AS RAW.ACCOUNTS
+    RAW.ACCOUNTS AS accounts
       PRIMARY KEY (account_id)
       WITH SYNONYMS ('bank accounts', 'customer accounts', 'financial accounts')
       COMMENT = 'Customer bank accounts including checking, savings, credit',
-    cards AS RAW.CARDS
+    RAW.CARDS AS cards
       PRIMARY KEY (card_id)
       WITH SYNONYMS ('debit cards', 'credit cards', 'payment cards')
       COMMENT = 'Customer debit and credit cards',
-    direct_deposits AS RAW.DIRECT_DEPOSITS
+    RAW.DIRECT_DEPOSITS AS direct_deposits
       PRIMARY KEY (deposit_id)
       WITH SYNONYMS ('payroll deposits', 'recurring deposits', 'employer deposits')
       COMMENT = 'Direct deposit transactions from employers and government',
-    cash_advances AS RAW.CASH_ADVANCES
+    RAW.CASH_ADVANCES AS cash_advances
       PRIMARY KEY (advance_id)
       WITH SYNONYMS ('payday advances', 'varo advance', 'short term loans')
       COMMENT = 'Cash advance transactions and repayments',
-    support_interactions AS RAW.SUPPORT_INTERACTIONS
+    RAW.SUPPORT_INTERACTIONS AS support_interactions
       PRIMARY KEY (interaction_id)
       WITH SYNONYMS ('customer support', 'service interactions', 'help requests')
       COMMENT = 'Customer support interactions and tickets'
@@ -183,23 +183,23 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CUSTOMER_BANKING_INTELLIGENCE
 -- ============================================================================
 CREATE OR REPLACE SEMANTIC VIEW SV_TRANSACTION_PAYMENT_INTELLIGENCE
   TABLES (
-    transactions AS RAW.TRANSACTIONS
+    RAW.TRANSACTIONS AS transactions
       PRIMARY KEY (transaction_id)
       WITH SYNONYMS ('payments', 'financial transactions', 'money movements')
       COMMENT = 'All customer financial transactions',
-    accounts AS RAW.ACCOUNTS
+    RAW.ACCOUNTS AS accounts
       PRIMARY KEY (account_id)
       WITH SYNONYMS ('source accounts', 'transaction accounts', 'payment accounts')
       COMMENT = 'Accounts used for transactions',
-    customers AS RAW.CUSTOMERS
+    RAW.CUSTOMERS AS customers
       PRIMARY KEY (customer_id)
       WITH SYNONYMS ('transaction customers', 'payers', 'account owners')
       COMMENT = 'Customers making transactions',
-    merchant_categories AS RAW.MERCHANT_CATEGORIES
+    RAW.MERCHANT_CATEGORIES AS merchant_categories
       PRIMARY KEY (mcc_code)
       WITH SYNONYMS ('merchant types', 'business categories', 'mcc codes')
       COMMENT = 'Merchant category classifications',
-    cards AS RAW.CARDS
+    RAW.CARDS AS cards
       PRIMARY KEY (card_id)
       WITH SYNONYMS ('payment instruments', 'transaction cards', 'plastic cards')
       COMMENT = 'Cards used for transactions'
@@ -316,27 +316,27 @@ CREATE OR REPLACE SEMANTIC VIEW SV_TRANSACTION_PAYMENT_INTELLIGENCE
 -- ============================================================================
 CREATE OR REPLACE SEMANTIC VIEW SV_CREDIT_RISK_INTELLIGENCE
   TABLES (
-    credit_applications AS RAW.CREDIT_APPLICATIONS
+    RAW.CREDIT_APPLICATIONS AS credit_applications
       PRIMARY KEY (application_id)
       WITH SYNONYMS ('loan applications', 'credit requests', 'lending applications')
       COMMENT = 'Applications for credit products',
-    cash_advances AS RAW.CASH_ADVANCES
+    RAW.CASH_ADVANCES AS cash_advances
       PRIMARY KEY (advance_id)
       WITH SYNONYMS ('short term lending', 'payday loans risk', 'advance lending')
       COMMENT = 'Cash advance loans and repayments',
-    accounts AS RAW.ACCOUNTS
+    RAW.ACCOUNTS AS accounts
       PRIMARY KEY (account_id)
       WITH SYNONYMS ('credit accounts risk', 'lending products', 'credit lines')
       COMMENT = 'Credit accounts including cards and lines of credit',
-    customers AS RAW.CUSTOMERS
+    RAW.CUSTOMERS AS customers
       PRIMARY KEY (customer_id)
       WITH SYNONYMS ('borrowers', 'credit customers', 'lending clients')
       COMMENT = 'Customers with credit products',
-    external_data AS RAW.EXTERNAL_DATA
+    RAW.EXTERNAL_DATA AS external_data
       PRIMARY KEY (external_data_id)
       WITH SYNONYMS ('credit bureau data', 'third party data', 'external credit info')
       COMMENT = 'External credit and verification data',
-    compliance_events AS RAW.COMPLIANCE_EVENTS
+    RAW.COMPLIANCE_EVENTS AS compliance_events
       PRIMARY KEY (event_id)
       WITH SYNONYMS ('regulatory events', 'compliance issues', 'risk events')
       COMMENT = 'Compliance and regulatory events'
