@@ -593,22 +593,30 @@ BEGIN
     CLOSE cursor1;
     
     -- Log dataset creation
-    INSERT INTO TRAINING_DATASETS VALUES (
-        dataset_id,
-        dataset_name,
-        NULL, -- model_name to be updated later
-        feature_set_id,
-        label_sql,
-        start_date,
-        end_date,
-        (SELECT COUNT(DISTINCT entity_id) FROM IDENTIFIER(:table_name)),
-        row_count,
-        table_name,
-        stratify_column IS NOT NULL,
-        0.8, -- default train/test split
+    LET entity_count INTEGER;
+    LET entity_result RESULTSET := (SELECT COUNT(DISTINCT entity_id) as cnt FROM IDENTIFIER(:table_name));
+    LET cursor2 CURSOR FOR entity_result;
+    OPEN cursor2;
+    FETCH cursor2 INTO entity_count;
+    CLOSE cursor2;
+    
+    INSERT INTO TRAINING_DATASETS 
+    (dataset_id, dataset_name, model_name, feature_set_id, label_query, start_date, end_date, num_entities, num_examples, table_name, stratified, train_test_split, created_by, created_at)
+    SELECT
+        :dataset_id,
+        :dataset_name,
+        NULL,
+        :feature_set_id,
+        :label_sql,
+        :start_date,
+        :end_date,
+        :entity_count,
+        :row_count,
+        :table_name,
+        :stratify_column IS NOT NULL,
+        0.8,
         CURRENT_USER(),
-        CURRENT_TIMESTAMP()
-    );
+        CURRENT_TIMESTAMP();
     
     RETURN 'Training dataset created: ' || table_name || ' with ' || row_count || ' rows';
 END;
