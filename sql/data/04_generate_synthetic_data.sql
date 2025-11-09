@@ -250,14 +250,19 @@ FROM (
     -- Generate 1-3 accounts per customer
     SELECT 
         c.*,
-        CASE ROW_NUMBER() OVER (PARTITION BY c.customer_id ORDER BY RANDOM())
+        CASE rn
             WHEN 1 THEN 'CHECKING'
             WHEN 2 THEN ARRAY_CONSTRUCT('SAVINGS', 'BELIEVE_CARD')[UNIFORM(0, 1, RANDOM())]
             WHEN 3 THEN ARRAY_CONSTRUCT('SAVINGS', 'LINE_OF_CREDIT')[UNIFORM(0, 1, RANDOM())]
         END AS account_type
-    FROM CUSTOMERS c
-    CROSS JOIN TABLE(GENERATOR(ROWCOUNT => 3))
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY c.customer_id ORDER BY RANDOM()) <= 
+    FROM (
+        SELECT 
+            c.*,
+            ROW_NUMBER() OVER (PARTITION BY c.customer_id ORDER BY RANDOM()) as rn
+        FROM CUSTOMERS c
+        CROSS JOIN TABLE(GENERATOR(ROWCOUNT => 3))
+    ) c
+    WHERE rn <= 
         CASE 
             WHEN UNIFORM(0, 100, RANDOM()) < 40 THEN 1  -- 40% have 1 account
             WHEN UNIFORM(0, 100, RANDOM()) < 80 THEN 2  -- 40% have 2 accounts  
