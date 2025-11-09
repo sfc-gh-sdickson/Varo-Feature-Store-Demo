@@ -899,13 +899,6 @@ ALTER TABLE PRODUCT_KNOWLEDGE SET CHANGE_TRACKING = TRUE;
 -- Switch back to smaller warehouse
 USE WAREHOUSE VARO_WH;
 
--- Analyze tables for optimizer
-ANALYZE TABLE CUSTOMERS;
-ANALYZE TABLE ACCOUNTS;
-ANALYZE TABLE TRANSACTIONS;
-ANALYZE TABLE CASH_ADVANCES;
-ANALYZE TABLE DIRECT_DEPOSITS;
-
 -- Display summary
 SELECT 'Data generation completed successfully!' AS status,
        (SELECT COUNT(*) FROM CUSTOMERS) AS customer_count,
