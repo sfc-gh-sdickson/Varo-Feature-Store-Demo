@@ -176,25 +176,25 @@ CREATE OR REPLACE DYNAMIC TABLE TRANSACTION_PATTERN_FEATURES
         SELECT
             customer_id,
             -- 7-day window features
-            COUNT(*) FILTER (WHERE transaction_date >= DATEADD('day', -7, CURRENT_DATE())) as txn_count_7d,
-            SUM(ABS(amount)) FILTER (WHERE transaction_date >= DATEADD('day', -7, CURRENT_DATE())) as txn_volume_7d,
-            COUNT(DISTINCT merchant_category) FILTER (WHERE transaction_date >= DATEADD('day', -7, CURRENT_DATE())) as unique_mcc_7d,
-            AVG(ABS(amount)) FILTER (WHERE transaction_date >= DATEADD('day', -7, CURRENT_DATE())) as avg_txn_amount_7d,
+            COUNT(CASE WHEN transaction_date >= DATEADD('day', -7, CURRENT_DATE()) THEN 1 END) as txn_count_7d,
+            SUM(CASE WHEN transaction_date >= DATEADD('day', -7, CURRENT_DATE()) THEN ABS(amount) END) as txn_volume_7d,
+            COUNT(DISTINCT CASE WHEN transaction_date >= DATEADD('day', -7, CURRENT_DATE()) THEN merchant_category END) as unique_mcc_7d,
+            AVG(CASE WHEN transaction_date >= DATEADD('day', -7, CURRENT_DATE()) THEN ABS(amount) END) as avg_txn_amount_7d,
             
             -- 30-day window features
-            COUNT(*) FILTER (WHERE transaction_date >= DATEADD('day', -30, CURRENT_DATE())) as txn_count_30d,
-            SUM(ABS(amount)) FILTER (WHERE transaction_date >= DATEADD('day', -30, CURRENT_DATE())) as txn_volume_30d,
-            COUNT(DISTINCT merchant_name) FILTER (WHERE transaction_date >= DATEADD('day', -30, CURRENT_DATE())) as unique_merchants_30d,
-            STDDEV(ABS(amount)) FILTER (WHERE transaction_date >= DATEADD('day', -30, CURRENT_DATE())) as txn_amount_stddev_30d,
+            COUNT(CASE WHEN transaction_date >= DATEADD('day', -30, CURRENT_DATE()) THEN 1 END) as txn_count_30d,
+            SUM(CASE WHEN transaction_date >= DATEADD('day', -30, CURRENT_DATE()) THEN ABS(amount) END) as txn_volume_30d,
+            COUNT(DISTINCT CASE WHEN transaction_date >= DATEADD('day', -30, CURRENT_DATE()) THEN merchant_name END) as unique_merchants_30d,
+            STDDEV(CASE WHEN transaction_date >= DATEADD('day', -30, CURRENT_DATE()) THEN ABS(amount) END) as txn_amount_stddev_30d,
             
             -- 90-day window features
-            COUNT(*) FILTER (WHERE transaction_date >= DATEADD('day', -90, CURRENT_DATE())) as txn_count_90d,
-            SUM(ABS(amount)) FILTER (WHERE transaction_date >= DATEADD('day', -90, CURRENT_DATE())) as txn_volume_90d,
-            MAX(ABS(amount)) FILTER (WHERE transaction_date >= DATEADD('day', -90, CURRENT_DATE())) as max_txn_amount_90d,
+            COUNT(CASE WHEN transaction_date >= DATEADD('day', -90, CURRENT_DATE()) THEN 1 END) as txn_count_90d,
+            SUM(CASE WHEN transaction_date >= DATEADD('day', -90, CURRENT_DATE()) THEN ABS(amount) END) as txn_volume_90d,
+            MAX(CASE WHEN transaction_date >= DATEADD('day', -90, CURRENT_DATE()) THEN ABS(amount) END) as max_txn_amount_90d,
             
             -- Time-based patterns
-            COUNT(*) FILTER (WHERE EXTRACT(hour FROM transaction_timestamp) BETWEEN 0 AND 6) as night_txn_count,
-            COUNT(*) FILTER (WHERE DAYOFWEEK(transaction_date) IN (1, 7)) as weekend_txn_count,
+            COUNT(CASE WHEN EXTRACT(hour FROM transaction_timestamp) BETWEEN 0 AND 6 THEN 1 END) as night_txn_count,
+            COUNT(CASE WHEN DAYOFWEEK(transaction_date) IN (1, 7) THEN 1 END) as weekend_txn_count,
             COUNT(DISTINCT DATE_TRUNC('day', transaction_date)) as active_days_total,
             
             -- Category-specific features
@@ -203,12 +203,12 @@ CREATE OR REPLACE DYNAMIC TABLE TRANSACTION_PATTERN_FEATURES
             SUM(CASE WHEN merchant_category IN ('7995', '5933') THEN ABS(amount) ELSE 0 END) as risky_spend,
             
             -- International and ATM usage
-            COUNT(*) FILTER (WHERE is_international = TRUE) as intl_txn_count,
+            COUNT(CASE WHEN is_international = TRUE THEN 1 END) as intl_txn_count,
             SUM(CASE WHEN transaction_category = 'ATM' THEN ABS(amount) ELSE 0 END) as total_atm_withdrawals,
             
             -- Velocity features
-            COUNT(*) FILTER (WHERE transaction_timestamp >= DATEADD('hour', -1, CURRENT_TIMESTAMP())) as txn_count_1h,
-            COUNT(*) FILTER (WHERE transaction_timestamp >= DATEADD('day', -1, CURRENT_TIMESTAMP())) as txn_count_24h
+            COUNT(CASE WHEN transaction_timestamp >= DATEADD('hour', -1, CURRENT_TIMESTAMP()) THEN 1 END) as txn_count_1h,
+            COUNT(CASE WHEN transaction_timestamp >= DATEADD('day', -1, CURRENT_TIMESTAMP()) THEN 1 END) as txn_count_24h
             
         FROM VARO_INTELLIGENCE.RAW.TRANSACTIONS
         WHERE status = 'COMPLETED'
