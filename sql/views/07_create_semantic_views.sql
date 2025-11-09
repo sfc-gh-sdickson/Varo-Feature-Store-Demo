@@ -299,12 +299,12 @@ CREATE OR REPLACE SEMANTIC VIEW SV_TRANSACTION_PAYMENT_INTELLIGENCE
     transactions.unique_categories AS COUNT(DISTINCT merchant_category)
       WITH SYNONYMS ('category diversity', 'spending categories')
       COMMENT = 'Number of unique merchant categories',
-    transactions.cashback_eligible_volume AS SUM(CASE WHEN cashback_eligible THEN ABS(amount) ELSE 0 END)
+    transactions.cashback_eligible_volume AS SUM(ABS(amount))
       WITH SYNONYMS ('rewards eligible spending', 'cashback qualified volume')
-      COMMENT = 'Volume eligible for cashback rewards',
-    transactions.high_risk_volume AS SUM(CASE WHEN high_risk_category THEN ABS(amount) ELSE 0 END)
+      COMMENT = 'Total transaction volume (cashback filtering done via merchant_categories.cashback_eligible dimension)',
+    transactions.high_risk_volume AS SUM(ABS(amount))
       WITH SYNONYMS ('risky transaction volume', 'high risk spending')
-      COMMENT = 'Volume at high-risk merchants',
+      COMMENT = 'Total transaction volume (risk filtering done via merchant_categories.high_risk_category dimension)',
     transactions.avg_fraud_score AS AVG(fraud_score)
       WITH SYNONYMS ('average risk score', 'mean fraud probability')
       COMMENT = 'Average fraud risk score'
@@ -424,9 +424,9 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CREDIT_RISK_INTELLIGENCE
     accounts.credit_utilization AS AVG(CASE WHEN credit_limit > 0 THEN ABS(current_balance) / credit_limit END)
       WITH SYNONYMS ('credit usage rate', 'utilization percentage')
       COMMENT = 'Average credit utilization rate',
-    customers.avg_risk_score AS AVG(CASE WHEN advance_status = 'ACTIVE' THEN default_risk_score END)
+    cash_advances.avg_risk_score AS AVG(default_risk_score)
       WITH SYNONYMS ('average default risk', 'mean risk probability')
-      COMMENT = 'Average default risk score',
+      COMMENT = 'Average default risk score for cash advances',
     external_data.verified_customers AS COUNT(DISTINCT CASE WHEN data_type = 'INCOME_VERIFICATION' THEN customer_id END)
       WITH SYNONYMS ('income verified count', 'verified borrowers')
       COMMENT = 'Number of income-verified customers',
