@@ -115,73 +115,7 @@ SELECT PARSE_JSON(
 )['results'] as search_results;
 
 -- ============================================================================
--- Step 5: Create helper views for easier querying
--- ============================================================================
-
--- View to search support transcripts with context
-CREATE OR REPLACE VIEW V_SUPPORT_SEARCH AS
-SELECT
-    transcript_id,
-    customer_id,
-    interaction_date,
-    category,
-    subcategory,
-    sentiment_score,
-    resolution_achieved,
-    -- Function to search transcripts
-    SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-        'VARO_INTELLIGENCE.RAW.SUPPORT_TRANSCRIPTS_SEARCH',
-        OBJECT_CONSTRUCT(
-            'query', :search_query,
-            'columns', ARRAY_CONSTRUCT('transcript_text'),
-            'limit', :result_limit
-        )
-    ) as search_results
-FROM SUPPORT_TRANSCRIPTS
-WHERE 1=1;
-
--- View to search compliance documents
-CREATE OR REPLACE VIEW V_COMPLIANCE_SEARCH AS
-SELECT
-    document_id,
-    document_type,
-    title,
-    effective_date,
-    tags,
-    -- Function to search documents
-    SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-        'VARO_INTELLIGENCE.RAW.COMPLIANCE_DOCS_SEARCH',
-        OBJECT_CONSTRUCT(
-            'query', :search_query,
-            'columns', ARRAY_CONSTRUCT('content'),
-            'limit', :result_limit
-        )
-    ) as search_results
-FROM COMPLIANCE_DOCUMENTS
-WHERE 1=1;
-
--- View to search product knowledge
-CREATE OR REPLACE VIEW V_PRODUCT_KNOWLEDGE_SEARCH AS
-SELECT
-    knowledge_id,
-    product_name,
-    category,
-    title,
-    version,
-    -- Function to search knowledge base
-    SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-        'VARO_INTELLIGENCE.RAW.PRODUCT_KNOWLEDGE_SEARCH',
-        OBJECT_CONSTRUCT(
-            'query', :search_query,
-            'columns', ARRAY_CONSTRUCT('content'),
-            'limit', :result_limit
-        )
-    ) as search_results
-FROM PRODUCT_KNOWLEDGE
-WHERE 1=1;
-
--- ============================================================================
--- Step 6: Create aggregate search function across all services
+-- Step 5: Create aggregate search function across all services
 -- ============================================================================
 CREATE OR REPLACE FUNCTION SEARCH_ALL_DOCUMENTS(search_query VARCHAR, max_results NUMBER)
 RETURNS TABLE(
@@ -268,7 +202,7 @@ $$
 $$;
 
 -- ============================================================================
--- Step 7: Usage examples
+-- Step 6: Usage examples
 -- ============================================================================
 
 -- Example 1: Search for card decline issues
