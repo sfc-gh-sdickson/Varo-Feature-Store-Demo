@@ -273,26 +273,50 @@ AS
     CALL COMPUTE_STREAMING_FEATURES();
 
 -- ============================================================================
--- Create API Integration for real-time serving (replaces Tecton serving)
+-- Create SQL Functions for Feature Serving (replacing External Functions)
+-- These simulate real-time serving without requiring AWS infrastructure
+-- For production use, you would set up actual External Functions with AWS
 -- ============================================================================
-CREATE OR REPLACE API INTEGRATION VARO_FEATURE_API
-    API_PROVIDER = aws_api_gateway
-    API_AWS_ROLE_ARN = 'arn:aws:iam::123456789012:role/VaroFeatureAPI'
-    API_ALLOWED_PREFIXES = ('https://api.varo-features.snowflake.app/')
-    ENABLED = TRUE;
 
--- ============================================================================
--- Create External Functions for feature serving
--- ============================================================================
-CREATE OR REPLACE EXTERNAL FUNCTION GET_CUSTOMER_FEATURES(customer_id VARCHAR)
+-- Function to get customer features (simulates real-time serving)
+CREATE OR REPLACE FUNCTION GET_CUSTOMER_FEATURES(customer_id VARCHAR)
     RETURNS VARIANT
-    API_INTEGRATION = VARO_FEATURE_API
-    AS 'https://api.varo-features.snowflake.app/v1/features/customer';
+    COMMENT = 'Retrieves current feature vector for a customer from online store'
+AS
+$$
+    SELECT feature_vector
+    FROM ONLINE_FEATURES
+    WHERE entity_id = customer_id 
+        AND entity_type = 'CUSTOMER'
+    ORDER BY last_updated DESC
+    LIMIT 1
+$$;
 
-CREATE OR REPLACE EXTERNAL FUNCTION GET_TRANSACTION_RISK_SCORE(transaction_data VARIANT)
+-- Function to score transaction risk (simulates ML model scoring)
+CREATE OR REPLACE FUNCTION GET_TRANSACTION_RISK_SCORE(transaction_data VARIANT)
     RETURNS NUMBER(3,2)
-    API_INTEGRATION = VARO_FEATURE_API
-    AS 'https://api.varo-features.snowflake.app/v1/score/transaction';
+    COMMENT = 'Calculates real-time risk score for a transaction'
+AS
+$$
+    -- This is a simplified mock implementation
+    -- In production, this would call a real ML model via External Function
+    SELECT 
+        LEAST(0.99, GREATEST(0.01,
+            0.1 +  -- Base risk
+            (CASE 
+                WHEN transaction_data:amount::NUMBER > 1000 THEN 0.2 
+                ELSE 0 
+            END) +
+            (CASE 
+                WHEN transaction_data:is_international::BOOLEAN THEN 0.15 
+                ELSE 0 
+            END) +
+            (CASE 
+                WHEN transaction_data:merchant_category::VARCHAR IN ('7995', '5933', '6010') THEN 0.25 
+                ELSE 0 
+            END)
+        ))
+$$;
 
 -- Display confirmation
 SELECT 'Feature Store tables and infrastructure created successfully' AS STATUS;
