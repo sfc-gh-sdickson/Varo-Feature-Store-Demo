@@ -729,7 +729,7 @@ FROM (
             WHEN UNIFORM(0, 100, RANDOM()) < 85 THEN 2
             ELSE UNIFORM(3, 5, RANDOM())
         END
-);
+) AS interactions;
 
 -- ============================================================================
 -- Step 10: Generate Feature Store Sample Data
