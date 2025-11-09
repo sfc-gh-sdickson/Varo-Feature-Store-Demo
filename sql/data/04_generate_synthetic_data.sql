@@ -611,8 +611,8 @@ LIMIT 50000000; -- Generate 50M transactions first (adjust as needed)
 INSERT INTO CASH_ADVANCES
 SELECT
     'ADV' || LPAD(SEQ4(), 8, '0') AS advance_id,
-    c.customer_id,
-    a.account_id,
+    customer_id,
+    account_id,
     advance_amount,
     CASE 
         WHEN advance_amount <= 50 THEN 3.00
@@ -642,9 +642,9 @@ SELECT
     -- Eligibility score based on customer profile
     LEAST(99, GREATEST(1,
         50 + 
-        (c.credit_score - 650) / 10 +
+        (credit_score - 650) / 10 +
         CASE WHEN dd_count > 0 THEN 20 ELSE 0 END +
-        CASE WHEN c.lifetime_value > 1000 THEN 10 ELSE 0 END
+        CASE WHEN lifetime_value > 1000 THEN 10 ELSE 0 END
     )) / 100.0 AS eligibility_score,
     -- Default risk score
     CASE 
@@ -683,7 +683,7 @@ FROM (
             WHEN UNIFORM(0, 100, RANDOM()) < 80 THEN 2
             ELSE 3
         END
-);
+) AS advances;
 
 -- ============================================================================
 -- Step 9: Generate Support Interactions
