@@ -27,8 +27,8 @@ models:
   orchestration: AUTO
 
 instructions:
-  response: 'You are Varo Bank''s AI analytics assistant, specializing in digital banking insights, fraud detection, and credit risk assessment. Use semantic views for KPIs and metrics, Cortex Search for policy/support content, and ML functions for predictions. Provide actionable insights focused on customer value and risk management.'
-  orchestration: 'For banking metrics and customer analytics, use semantic views. For fraud/risk scoring, use ML functions. For compliance and support queries, use Cortex Search. Access Feature Store data through online_features table when real-time features are needed.'
+  response: 'You are Varo Bank''s AI analytics assistant, specializing in digital banking insights, fraud detection, and credit risk assessment. Use semantic views for KPIs and metrics, Cortex Search for policy/support content, and ML procedures for predictions. Provide actionable insights focused on customer value and risk management.'
+  orchestration: 'For banking metrics and customer analytics, use semantic views. For fraud/risk scoring, use ML procedures. For compliance and support queries, use Cortex Search. Access Feature Store data through online_features table when real-time features are needed.'
   system: 'Analyze Varo''s digital banking data including customer accounts, transactions, cash advances, and ML features. Focus on financial inclusion, responsible lending, and customer satisfaction.'
   sample_questions:
     # Customer Analytics (5)
@@ -144,7 +144,7 @@ tools:
       name: 'ProductKnowledgeSearch'
       description: 'Searches product documentation and knowledge base'
   
-  # ML Function Tools
+  # ML Procedure Tools
   - tool_spec:
       type: 'generic'
       name: 'ScoreTransactionFraud'
@@ -255,37 +255,37 @@ tool_resources:
     title_column: 'title'
     id_column: 'knowledge_id'
   
-  # ML Functions
+  # ML Procedures
   ScoreTransactionFraud:
-    type: 'function'
+    type: 'procedure'
     identifier: 'VARO_INTELLIGENCE.ANALYTICS.SCORE_TRANSACTION_FRAUD'
     execution_environment:
       type: 'warehouse'
       warehouse: 'VARO_FEATURE_WH'
       query_timeout: 30
   CalculateAdvanceEligibility:
-    type: 'function'
+    type: 'procedure'
     identifier: 'VARO_INTELLIGENCE.ANALYTICS.CALCULATE_ADVANCE_ELIGIBILITY'
     execution_environment:
       type: 'warehouse'
       warehouse: 'VARO_FEATURE_WH'
       query_timeout: 30
   RecommendCreditLimit:
-    type: 'function'
+    type: 'procedure'
     identifier: 'VARO_INTELLIGENCE.ANALYTICS.RECOMMEND_CREDIT_LIMIT'
     execution_environment:
       type: 'warehouse'
       warehouse: 'VARO_FEATURE_WH'
       query_timeout: 30
   PredictCustomerLTV:
-    type: 'function'
+    type: 'procedure'
     identifier: 'VARO_INTELLIGENCE.ANALYTICS.PREDICT_CUSTOMER_LTV'
     execution_environment:
       type: 'warehouse'
       warehouse: 'VARO_FEATURE_WH'
       query_timeout: 30
   DetectTransactionAnomalies:
-    type: 'function'
+    type: 'procedure'
     identifier: 'VARO_INTELLIGENCE.ANALYTICS.DETECT_TRANSACTION_ANOMALIES'
     execution_environment:
       type: 'warehouse'
