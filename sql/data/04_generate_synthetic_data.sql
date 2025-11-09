@@ -580,21 +580,28 @@ FROM (
         AND a.opening_date <= DATEADD('day', -1 * day_offset, CURRENT_DATE())
         AND (a.closing_date IS NULL OR a.closing_date >= DATEADD('day', -1 * day_offset, CURRENT_DATE()))
 ) AS base_txn
-CROSS JOIN LATERAL (
+CROSS JOIN (
     -- Generate 1-10 transactions per account per day
-    SELECT * FROM TABLE(GENERATOR(ROWCOUNT => 
-        CASE 
-            WHEN UNIFORM(0, 100, RANDOM()) < 30 THEN 0  -- 30% no transactions
-            WHEN UNIFORM(0, 100, RANDOM()) < 60 THEN 1  -- 30% one transaction
-            WHEN UNIFORM(0, 100, RANDOM()) < 80 THEN 2  -- 20% two transactions
-            WHEN UNIFORM(0, 100, RANDOM()) < 90 THEN 3  -- 10% three transactions
-            ELSE UNIFORM(4, 10, RANDOM())               -- 10% many transactions
-        END
-    ))
+    SELECT ROW_NUMBER() OVER (ORDER BY SEQ4()) AS txn_num
+    FROM TABLE(GENERATOR(ROWCOUNT => 10))
 ) AS txn_gen
-CROSS JOIN LATERAL (
-    SELECT * FROM temp_merchants 
-    SAMPLE (1 ROWS)
+WHERE txn_num <= 
+    CASE 
+        WHEN UNIFORM(0, 100, RANDOM()) < 30 THEN 0  -- 30% no transactions
+        WHEN UNIFORM(0, 100, RANDOM()) < 60 THEN 1  -- 30% one transaction
+        WHEN UNIFORM(0, 100, RANDOM()) < 80 THEN 2  -- 20% two transactions
+        WHEN UNIFORM(0, 100, RANDOM()) < 90 THEN 3  -- 10% three transactions
+        ELSE UNIFORM(4, 10, RANDOM())               -- 10% many transactions
+    END
+CROSS JOIN (
+    SELECT 
+        merchant_name,
+        mcc_code,
+        merchant_city,
+        merchant_state,
+        ROW_NUMBER() OVER (ORDER BY RANDOM()) AS rn
+    FROM temp_merchants
+    QUALIFY rn = 1
 ) AS m
 LIMIT 50000000; -- Generate 50M transactions first (adjust as needed)
 
