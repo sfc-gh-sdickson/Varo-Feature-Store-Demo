@@ -220,8 +220,28 @@ CREATE OR REPLACE DYNAMIC TABLE TRANSACTION_PATTERN_FEATURES
         'CUSTOMER' as entity_type,
         CURRENT_TIMESTAMP() as feature_timestamp,
         
-        -- All computed features
-        *,
+        -- All computed features from CTE
+        txn_count_7d,
+        txn_volume_7d,
+        unique_mcc_7d,
+        avg_txn_amount_7d,
+        txn_count_30d,
+        txn_volume_30d,
+        unique_merchants_30d,
+        txn_amount_stddev_30d,
+        txn_count_90d,
+        txn_volume_90d,
+        max_txn_amount_90d,
+        night_txn_count,
+        weekend_txn_count,
+        active_days_total,
+        essential_spend,
+        discretionary_spend,
+        risky_spend,
+        intl_txn_count,
+        total_atm_withdrawals,
+        txn_count_1h,
+        txn_count_24h,
         
         -- Derived ratios
         DIV0NULL(essential_spend, txn_volume_30d) as essential_spend_ratio,
@@ -633,12 +653,6 @@ BEGIN
     RETURN 'Updated importance for ' || feature_count || ' features';
 END;
 $$;
-
--- ============================================================================
--- Enable Tasks
--- ============================================================================
-ALTER TASK COMPUTE_DAILY_FEATURES RESUME;
-ALTER TASK COMPUTE_STREAMING_FEATURES RESUME;
 
 -- Display confirmation
 SELECT 'Feature engineering infrastructure created successfully' AS STATUS;
