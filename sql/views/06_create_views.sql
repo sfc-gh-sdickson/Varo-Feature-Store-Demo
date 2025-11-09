@@ -14,7 +14,7 @@ USE WAREHOUSE VARO_WH;
 CREATE OR REPLACE VIEW V_CUSTOMER_360 AS
 WITH customer_metrics AS (
     SELECT
-        c.customer_id,
+        c.customer_id AS cust_id,
         -- Account metrics
         COUNT(DISTINCT a.account_id) AS total_accounts,
         COUNT(DISTINCT CASE WHEN a.account_type = 'CHECKING' THEN a.account_id END) AS checking_accounts,
