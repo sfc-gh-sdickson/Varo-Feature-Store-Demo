@@ -401,41 +401,41 @@ CREATE OR REPLACE DYNAMIC TABLE FRAUD_DETECTION_FEATURES
             AND status = 'COMPLETED'
     )
     SELECT
-        customer_id,
-        customer_id as entity_id,
+        t.customer_id,
+        t.customer_id as entity_id,
         'CUSTOMER' as entity_type,
         CURRENT_TIMESTAMP() as feature_timestamp,
         
         -- Unusual amount patterns
         MAX(CASE 
-            WHEN ABS(amount) > avg_amount * 3 AND ABS(amount) > 100 THEN 1 
+            WHEN ABS(t.amount) > avg_txn.avg_amount * 3 AND ABS(t.amount) > 100 THEN 1 
             ELSE 0 
         END) as has_unusual_amount,
         
         -- Velocity indicators
         MAX(CASE 
-            WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 5 
-                AND merchant_city != prev_merchant_city THEN 1 
+            WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 5 
+                AND t.merchant_city != t.prev_merchant_city THEN 1 
             ELSE 0 
         END) as impossible_travel_flag,
         
         COUNT(CASE 
-            WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 1 THEN 1 
+            WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 1 THEN 1 
         END) as rapid_fire_txn_count,
         
         -- High-risk merchant usage
-        SUM(CASE WHEN merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) as risky_merchant_txn_count,
-        SUM(CASE WHEN is_international = TRUE THEN 1 ELSE 0 END) as international_txn_count_7d,
+        SUM(CASE WHEN t.merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) as risky_merchant_txn_count,
+        SUM(CASE WHEN t.is_international = TRUE THEN 1 ELSE 0 END) as international_txn_count_7d,
         
         -- Time pattern anomalies
         COUNT(CASE 
-            WHEN EXTRACT(hour FROM transaction_timestamp) BETWEEN 2 AND 5 
-                AND ABS(amount) > 200 THEN 1 
+            WHEN EXTRACT(hour FROM t.transaction_timestamp) BETWEEN 2 AND 5 
+                AND ABS(t.amount) > 200 THEN 1 
         END) as late_night_high_value_count,
         
         -- Geographic diversity
-        COUNT(DISTINCT merchant_state) as unique_states_7d,
-        COUNT(DISTINCT merchant_city) as unique_cities_7d,
+        COUNT(DISTINCT t.merchant_state) as unique_states_7d,
+        COUNT(DISTINCT t.merchant_city) as unique_cities_7d,
         
         -- Device and channel patterns
         COUNT(DISTINCT d.device_id) as unique_devices_7d,
@@ -444,49 +444,49 @@ CREATE OR REPLACE DYNAMIC TABLE FRAUD_DETECTION_FEATURES
         -- Aggregated risk score
         LEAST(1.0, (
             MAX(CASE 
-                WHEN ABS(amount) > avg_amount * 3 AND ABS(amount) > 100 THEN 1 
+                WHEN ABS(t.amount) > avg_txn.avg_amount * 3 AND ABS(t.amount) > 100 THEN 1 
                 ELSE 0 
             END) * 0.3 +
             MAX(CASE 
-                WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 5 
-                    AND merchant_city != prev_merchant_city THEN 1 
+                WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 5 
+                    AND t.merchant_city != t.prev_merchant_city THEN 1 
                 ELSE 0 
             END) * 0.4 +
             (COUNT(CASE 
-                WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 1 THEN 1 
+                WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 1 THEN 1 
             END) > 3) * 0.2 +
-            (SUM(CASE WHEN merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5) * 0.1
+            (SUM(CASE WHEN t.merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5) * 0.1
         )) as fraud_risk_score,
         
         -- Feature vector
         OBJECT_CONSTRUCT(
             'unusual_amount', MAX(CASE 
-                WHEN ABS(amount) > avg_amount * 3 AND ABS(amount) > 100 THEN 1 
+                WHEN ABS(t.amount) > avg_txn.avg_amount * 3 AND ABS(t.amount) > 100 THEN 1 
                 ELSE 0 
             END),
             'impossible_travel', MAX(CASE 
-                WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 5 
-                    AND merchant_city != prev_merchant_city THEN 1 
+                WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 5 
+                    AND t.merchant_city != t.prev_merchant_city THEN 1 
                 ELSE 0 
             END),
             'rapid_fire_count', COUNT(CASE 
-                WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 1 THEN 1 
+                WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 1 THEN 1 
             END),
-            'risky_merchants', SUM(CASE WHEN merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END),
+            'risky_merchants', SUM(CASE WHEN t.merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END),
             'risk_score', LEAST(1.0, (
                 MAX(CASE 
-                    WHEN ABS(amount) > avg_amount * 3 AND ABS(amount) > 100 THEN 1 
+                    WHEN ABS(t.amount) > avg_txn.avg_amount * 3 AND ABS(t.amount) > 100 THEN 1 
                     ELSE 0 
                 END) * 0.3 +
                 MAX(CASE 
-                    WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 5 
-                        AND merchant_city != prev_merchant_city THEN 1 
+                    WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 5 
+                        AND t.merchant_city != t.prev_merchant_city THEN 1 
                     ELSE 0 
                 END) * 0.4 +
                 (COUNT(CASE 
-                    WHEN DATEDIFF('minute', prev_txn_time, transaction_timestamp) < 1 THEN 1 
+                    WHEN DATEDIFF('minute', t.prev_txn_time, t.transaction_timestamp) < 1 THEN 1 
                 END) > 3) * 0.2 +
-                (SUM(CASE WHEN merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5) * 0.1
+                (SUM(CASE WHEN t.merchant_category IN ('7995', '5933', '6010', '6011') THEN 1 ELSE 0 END) > 5) * 0.1
             ))
         ) as fraud_features
         
@@ -499,7 +499,7 @@ CREATE OR REPLACE DYNAMIC TABLE FRAUD_DETECTION_FEATURES
     ) avg_txn ON t.customer_id = avg_txn.customer_id
     LEFT JOIN VARO_INTELLIGENCE.RAW.DEVICE_SESSIONS d 
         ON t.customer_id = d.customer_id 
-        AND DATE(d.session_start) = t.transaction_date
+        AND DATE(d.session_start) = DATE(t.transaction_timestamp)
     GROUP BY t.customer_id;
 
 -- ============================================================================
