@@ -85,10 +85,8 @@ BEGIN
         INSERT (entity_id, entity_type, feature_id, feature_value, feature_timestamp)
         VALUES (src.customer_id, src.entity_type, src.feature_id, src.feature_value, src.feature_timestamp);
     
-    GET DIAGNOSTICS rows_processed = ROW_COUNT;
-    
     -- Update online features for real-time serving
-    MERGE INTO ONLINE_FEATURES of
+    MERGE INTO ONLINE_FEATURES
     USING (
         SELECT 
             entity_id,
@@ -98,16 +96,16 @@ BEGIN
         WHERE feature_timestamp >= DATEADD('hour', -1, CURRENT_TIMESTAMP())
         GROUP BY entity_id, entity_type
     ) src
-    ON of.entity_id = src.entity_id AND of.entity_type = src.entity_type
+    ON ONLINE_FEATURES.entity_id = src.entity_id AND ONLINE_FEATURES.entity_type = src.entity_type
     WHEN MATCHED THEN
         UPDATE SET 
-            of.feature_vector = src.feature_vector,
-            of.last_updated = CURRENT_TIMESTAMP()
+            feature_vector = src.feature_vector,
+            last_updated = CURRENT_TIMESTAMP()
     WHEN NOT MATCHED THEN
         INSERT (entity_id, entity_type, feature_vector)
         VALUES (src.entity_id, src.entity_type, src.feature_vector);
     
-    RETURN 'Processed ' || rows_processed || ' streaming feature updates';
+    RETURN 'Streaming features computed successfully';
 END;
 $$;
 
@@ -567,7 +565,12 @@ BEGIN
         JOIN features f ON l.entity_id = f.entity_id AND l.timestamp = f.timestamp
         WHERE l.timestamp BETWEEN ''' || start_date || ''' AND ''' || end_date || '''';
     
-    GET DIAGNOSTICS row_count = ROW_COUNT;
+    -- Get row count from created table
+    LET row_count_result RESULTSET := (SELECT COUNT(*) as cnt FROM IDENTIFIER(:table_name));
+    LET cursor1 CURSOR FOR row_count_result;
+    OPEN cursor1;
+    FETCH cursor1 INTO row_count;
+    CLOSE cursor1;
     
     -- Log dataset creation
     INSERT INTO TRAINING_DATASETS VALUES (
@@ -578,7 +581,7 @@ BEGIN
         label_sql,
         start_date,
         end_date,
-        (SELECT COUNT(DISTINCT entity_id) FROM IDENTIFIER(table_name)),
+        (SELECT COUNT(DISTINCT entity_id) FROM IDENTIFIER(:table_name)),
         row_count,
         table_name,
         stratify_column IS NOT NULL,
@@ -623,7 +626,9 @@ BEGIN
         FROM TABLE(FLATTEN(input => importance_data))
     );
     
-    GET DIAGNOSTICS feature_count = ROW_COUNT;
+    -- Get count from FLATTEN result
+    SELECT COUNT(*) INTO feature_count
+    FROM TABLE(FLATTEN(input => importance_data));
     
     RETURN 'Updated importance for ' || feature_count || ' features';
 END;
