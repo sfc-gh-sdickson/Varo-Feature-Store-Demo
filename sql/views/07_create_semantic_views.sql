@@ -415,7 +415,7 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CREDIT_RISK_INTELLIGENCE
     cash_advances.collection_rate AS SUM(CASE WHEN advance_status = 'REPAID' THEN repayment_amount ELSE 0 END) * 1.0 / NULLIF(SUM(advance_amount + fee_amount), 0)
       WITH SYNONYMS ('repayment rate', 'collection percentage')
       COMMENT = 'Percentage of advances collected',
-    cash_advances.avg_days_to_repay AS AVG(CASE WHEN advance_status = 'REPAID' THEN DATEDIFF(DAY, advance_date, repayment_date) END)
+    cash_advances.avg_days_to_repay AS AVG(CASE WHEN advance_status = 'REPAID' THEN DATEDIFF('day', advance_date, repayment_date) END)
       WITH SYNONYMS ('average repayment days', 'mean collection time')
       COMMENT = 'Average days to repay advance',
     accounts.total_credit_exposure AS SUM(credit_limit)
