@@ -169,8 +169,8 @@ SELECT
     
     -- Balance based on account type and customer profile (using credit_limit)
     CASE 
-        WHEN account_type = 'CHECKING' THEN ROUND(UNIFORM(0, 5000, RANDOM()) * POWER(RANDOM(), 2), 2)
-        WHEN account_type = 'SAVINGS' THEN ROUND(UNIFORM(0, 25000, RANDOM()) * POWER(RANDOM(), 1.5), 2)
+        WHEN account_type = 'CHECKING' THEN ROUND(UNIFORM(0, 5000, RANDOM()), 2)
+        WHEN account_type = 'SAVINGS' THEN ROUND(UNIFORM(0, 25000, RANDOM()), 2)
         WHEN account_type = 'BELIEVE_CARD' THEN 
             -ROUND(RANDOM() * 
                 CASE
@@ -194,8 +194,8 @@ SELECT
         WHEN account_type IN ('CHECKING', 'SAVINGS') THEN 
             -- For deposit accounts, available = current
             CASE 
-                WHEN account_type = 'CHECKING' THEN ROUND(UNIFORM(0, 5000, RANDOM()) * POWER(RANDOM(), 2), 2)
-                WHEN account_type = 'SAVINGS' THEN ROUND(UNIFORM(0, 25000, RANDOM()) * POWER(RANDOM(), 1.5), 2)
+                WHEN account_type = 'CHECKING' THEN ROUND(UNIFORM(0, 5000, RANDOM()), 2)
+                WHEN account_type = 'SAVINGS' THEN ROUND(UNIFORM(0, 25000, RANDOM()), 2)
             END
         ELSE 
             -- For credit accounts, available = limit - used (limit + negative balance)
