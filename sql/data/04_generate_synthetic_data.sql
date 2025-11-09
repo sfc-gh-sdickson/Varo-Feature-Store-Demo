@@ -98,10 +98,10 @@ SELECT
     ARRAY_CONSTRUCT('MOBILE_APP', 'WEB', 'REFERRAL', 'PAID_AD', 'ORGANIC', 'PARTNER')[UNIFORM(0, 5, RANDOM())] AS acquisition_channel,
     
     DATEADD('day', -1 * UNIFORM(1, 1825, RANDOM()), CURRENT_DATE()) AS acquisition_date,
-    DATEADD('day', UNIFORM(1, 30, RANDOM()), acquisition_date) AS first_deposit_date,
+    DATEADD('day', UNIFORM(1, 30, RANDOM()), DATEADD('day', -1 * UNIFORM(1, 1825, RANDOM()), CURRENT_DATE())) AS first_deposit_date,
     
     CASE WHEN customer_status = 'CLOSED' 
-         THEN DATEADD('day', UNIFORM(30, 365, RANDOM()), acquisition_date)
+         THEN DATEADD('day', UNIFORM(30, 365, RANDOM()), DATEADD('day', -1 * UNIFORM(1, 1825, RANDOM()), CURRENT_DATE()))
          ELSE NULL 
     END AS churn_date,
     
@@ -172,21 +172,19 @@ SELECT
         WHEN account_type = 'CHECKING' THEN ROUND(UNIFORM(0, 5000, RANDOM()), 2)
         WHEN account_type = 'SAVINGS' THEN ROUND(UNIFORM(0, 25000, RANDOM()), 2)
         WHEN account_type = 'BELIEVE_CARD' THEN 
-            -ROUND(RANDOM() * 
-                CASE
-                    WHEN c.credit_score < 600 THEN 350.00
-                    WHEN c.credit_score < 700 THEN 700.00
-                    WHEN c.credit_score < 750 THEN 1750.00
-                    ELSE 3500.00
-                END, 2)
+            -CASE
+                WHEN c.credit_score < 600 THEN ROUND(UNIFORM(0, 350, RANDOM()), 2)
+                WHEN c.credit_score < 700 THEN ROUND(UNIFORM(0, 700, RANDOM()), 2)
+                WHEN c.credit_score < 750 THEN ROUND(UNIFORM(0, 1750, RANDOM()), 2)
+                ELSE ROUND(UNIFORM(0, 3500, RANDOM()), 2)
+            END
         WHEN account_type = 'LINE_OF_CREDIT' THEN 
-            -ROUND(RANDOM() * 
-                CASE
-                    WHEN c.credit_score < 650 THEN 500.00
-                    WHEN c.credit_score < 700 THEN 1000.00
-                    WHEN c.credit_score < 750 THEN 2500.00
-                    ELSE 5000.00
-                END, 2)
+            -CASE
+                WHEN c.credit_score < 650 THEN ROUND(UNIFORM(0, 500, RANDOM()), 2)
+                WHEN c.credit_score < 700 THEN ROUND(UNIFORM(0, 1000, RANDOM()), 2)
+                WHEN c.credit_score < 750 THEN ROUND(UNIFORM(0, 2500, RANDOM()), 2)
+                ELSE ROUND(UNIFORM(0, 5000, RANDOM()), 2)
+            END
         ELSE 0.00
     END AS current_balance,
     
@@ -202,32 +200,18 @@ SELECT
         WHEN account_type = 'BELIEVE_CARD' THEN 
             -- For credit accounts, available = limit - used (limit + negative balance)
             CASE
-                WHEN c.credit_score < 600 THEN 500.00
-                WHEN c.credit_score < 700 THEN 1000.00
-                WHEN c.credit_score < 750 THEN 2500.00
-                ELSE 5000.00
-            END -
-            ROUND(RANDOM() * 
-                CASE
-                    WHEN c.credit_score < 600 THEN 350.00
-                    WHEN c.credit_score < 700 THEN 700.00
-                    WHEN c.credit_score < 750 THEN 1750.00
-                    ELSE 3500.00
-                END, 2)
+                WHEN c.credit_score < 600 THEN ROUND(500.00 - UNIFORM(0, 350, RANDOM()), 2)
+                WHEN c.credit_score < 700 THEN ROUND(1000.00 - UNIFORM(0, 700, RANDOM()), 2)
+                WHEN c.credit_score < 750 THEN ROUND(2500.00 - UNIFORM(0, 1750, RANDOM()), 2)
+                ELSE ROUND(5000.00 - UNIFORM(0, 3500, RANDOM()), 2)
+            END
         WHEN account_type = 'LINE_OF_CREDIT' THEN 
             CASE
-                WHEN c.credit_score < 650 THEN 1000.00
-                WHEN c.credit_score < 700 THEN 2000.00
-                WHEN c.credit_score < 750 THEN 5000.00
-                ELSE 10000.00
-            END -
-            ROUND(RANDOM() * 
-                CASE
-                    WHEN c.credit_score < 650 THEN 500.00
-                    WHEN c.credit_score < 700 THEN 1000.00
-                    WHEN c.credit_score < 750 THEN 2500.00
-                    ELSE 5000.00
-                END, 2)
+                WHEN c.credit_score < 650 THEN ROUND(1000.00 - UNIFORM(0, 500, RANDOM()), 2)
+                WHEN c.credit_score < 700 THEN ROUND(2000.00 - UNIFORM(0, 1000, RANDOM()), 2)
+                WHEN c.credit_score < 750 THEN ROUND(5000.00 - UNIFORM(0, 2500, RANDOM()), 2)
+                ELSE ROUND(10000.00 - UNIFORM(0, 5000, RANDOM()), 2)
+            END
         ELSE 0.00
     END AS available_balance,
     
@@ -294,15 +278,15 @@ SELECT
         ELSE 'INACTIVE'
     END AS card_status,
     a.opening_date AS issue_date,
-    DATEADD('year', 3, issue_date) AS expiration_date,
-    DATEADD('day', UNIFORM(0, 7, RANDOM()), issue_date) AS activation_date,
+    DATEADD('year', 3, a.opening_date) AS expiration_date,
+    DATEADD('day', UNIFORM(0, 7, RANDOM()), a.opening_date) AS activation_date,
     TRUE AS pin_set,
     TRUE AS contactless_enabled,
     UNIFORM(0, 1, RANDOM()) = 1 AS international_enabled,
     TRUE AS atm_enabled,
     TRUE AS online_enabled,
     CASE 
-        WHEN card_type = 'DEBIT' THEN 1000.00
+        WHEN a.account_type IN ('CHECKING', 'SAVINGS') THEN 1000.00
         ELSE 5000.00
     END AS daily_limit,
     CURRENT_TIMESTAMP() AS created_at,
