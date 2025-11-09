@@ -152,17 +152,17 @@ SELECT
     CASE 
         WHEN account_type = 'BELIEVE_CARD' THEN 
             CASE
-                WHEN c.credit_score < 600 THEN 500
-                WHEN c.credit_score < 700 THEN 1000
-                WHEN c.credit_score < 750 THEN 2500
-                ELSE 5000
+                WHEN c.credit_score < 600 THEN 500.00
+                WHEN c.credit_score < 700 THEN 1000.00
+                WHEN c.credit_score < 750 THEN 2500.00
+                ELSE 5000.00
             END
         WHEN account_type = 'LINE_OF_CREDIT' THEN 
             CASE
-                WHEN c.credit_score < 650 THEN 1000
-                WHEN c.credit_score < 700 THEN 2000
-                WHEN c.credit_score < 750 THEN 5000
-                ELSE 10000
+                WHEN c.credit_score < 650 THEN 1000.00
+                WHEN c.credit_score < 700 THEN 2000.00
+                WHEN c.credit_score < 750 THEN 5000.00
+                ELSE 10000.00
             END
         ELSE NULL
     END AS credit_limit,
