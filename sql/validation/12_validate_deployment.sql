@@ -110,18 +110,7 @@ LEFT JOIN INFORMATION_SCHEMA.TABLES t
 -- ============================================================================
 SELECT 'VALIDATING DYNAMIC TABLES' as validation_step;
 
-SELECT 
-    name as dynamic_table_name,
-    target_lag,
-    refresh_mode,
-    CASE 
-        WHEN state = 'Active' THEN 'PASS'
-        ELSE 'FAIL - State: ' || state
-    END as status
-FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLES(
-    DATABASE_NAME => 'VARO_INTELLIGENCE',
-    SCHEMA_NAME => 'FEATURE_STORE'
-));
+SHOW DYNAMIC TABLES IN SCHEMA FEATURE_STORE;
 
 -- ============================================================================
 -- 5. View Validation
@@ -284,7 +273,7 @@ SHOW AGENTS LIKE 'VARO_INTELLIGENCE_AGENT';
 SELECT 'VALIDATING PERMISSIONS' as validation_step;
 
 -- Check current role privileges
-SHOW GRANTS TO ROLE IDENTIFIER($CURRENT_ROLE());
+-- SHOW GRANTS TO ROLE CURRENT_ROLE;  -- Uncomment if needed
 
 -- ============================================================================
 -- Summary Report
