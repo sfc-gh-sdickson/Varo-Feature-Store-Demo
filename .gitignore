@@ -1,2 +1,8 @@
 /11-07_Varo_Consultation_Evaluation_of_Feature_Store_Alternatives_for_SQL-First_Streaming_Backfill_and_Autoscaling_Needs-transcript.docx
 /~$-07_Varo_Consultation_Evaluation_of_Feature_Store_Alternatives_for_SQL-First_Streaming_Backfill_and_Autoscaling_Needs-transcript.docx
+
+# Internal documentation not for distribution
+docs/SNOWFLAKE_OPTIMIZATION_NOTES.md
+docs/SNOWFLAKE_GOTCHAS.md
+docs/PROJECT_POST_MORTEM.md
+Opus_cursor_build_snowflake_intelligence_demo.md
