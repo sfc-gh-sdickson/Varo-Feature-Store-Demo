@@ -154,11 +154,9 @@ WITH model_predictions AS (
         SUM(CASE WHEN t.fraud_score <= 0.3 AND ce.event_type = 'FRAUD_CONFIRMED' THEN 1 ELSE 0 END) as false_negatives,
         AVG(t.fraud_score) as avg_risk_score
     FROM RAW.TRANSACTIONS t
-    LEFT JOIN RAW.COMPLIANCE_EVENTS ce 
-        ON t.transaction_id = ce.transaction_id 
-        AND ce.event_type = 'FRAUD_CONFIRMED'
-    JOIN FEATURE_STORE.MODEL_FEATURES mf ON mf.model_name = 'FRAUD_DETECTION_MODEL'
-    WHERE t.transaction_date >= DATEADD('day', -30, CURRENT_DATE())
+    CROSS JOIN FEATURE_STORE.MODEL_FEATURES mf
+    WHERE mf.model_name = 'FRAUD_DETECTION_MODEL'
+      AND t.transaction_date >= DATEADD('day', -30, CURRENT_DATE())
     GROUP BY mf.model_name, mf.model_version, DATE(t.transaction_date)
 )
 SELECT 
