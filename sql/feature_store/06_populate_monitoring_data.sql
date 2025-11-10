@@ -98,7 +98,7 @@ CREATE OR REPLACE VIEW V_FEATURE_PERFORMANCE_BY_FEATURE AS
 WITH snowflake_perf AS (
     SELECT
         fd.feature_name,
-        fd.feature_category,
+        fd.feature_group,
         'Snowflake' AS platform,
         COUNT(*) AS computation_count,
         AVG(DATEDIFF('second', fcl.compute_start, fcl.compute_end)) AS avg_compute_time_sec,
@@ -109,12 +109,12 @@ WITH snowflake_perf AS (
     JOIN FEATURE_COMPUTE_LOGS fcl ON fd.feature_id = fcl.feature_id
     WHERE fcl.warehouse_used = 'VARO_FEATURE_WH'
       AND fcl.compute_start >= DATEADD('day', -30, CURRENT_DATE())
-    GROUP BY fd.feature_name, fd.feature_category
+    GROUP BY fd.feature_name, fd.feature_group
 ),
 tecton_perf AS (
     SELECT
         fd.feature_name,
-        fd.feature_category,
+        fd.feature_group,
         'Tecton' AS platform,
         COUNT(*) AS computation_count,
         AVG(DATEDIFF('second', fcl.compute_start, fcl.compute_end)) AS avg_compute_time_sec,
@@ -124,7 +124,7 @@ tecton_perf AS (
     FROM FEATURE_DEFINITIONS fd
     JOIN FEATURE_COMPUTE_LOGS fcl ON fd.feature_id = fcl.feature_id
     WHERE fcl.warehouse_used = 'TECTON_SPARK_CLUSTER'
-    GROUP BY fd.feature_name, fd.feature_category
+    GROUP BY fd.feature_name, fd.feature_group
 )
 SELECT * FROM snowflake_perf
 UNION ALL
