@@ -148,10 +148,10 @@ WITH model_predictions AS (
         mf.model_version,
         DATE(t.transaction_date) as prediction_date,
         COUNT(*) as prediction_count,
-        -- Fraud detection metrics (example)
+        -- Fraud detection metrics (based on fraud_score)
         SUM(CASE WHEN t.fraud_score > 0.7 THEN 1 ELSE 0 END) as high_risk_flagged,
-        SUM(CASE WHEN t.fraud_score > 0.7 AND ce.event_type = 'FRAUD_CONFIRMED' THEN 1 ELSE 0 END) as true_positives,
-        SUM(CASE WHEN t.fraud_score <= 0.3 AND ce.event_type = 'FRAUD_CONFIRMED' THEN 1 ELSE 0 END) as false_negatives,
+        SUM(CASE WHEN t.fraud_score > 0.7 AND t.status = 'DECLINED' THEN 1 ELSE 0 END) as high_risk_declined,
+        SUM(CASE WHEN t.fraud_score <= 0.3 AND t.status = 'DECLINED' THEN 1 ELSE 0 END) as low_risk_declined,
         AVG(t.fraud_score) as avg_risk_score
     FROM RAW.TRANSACTIONS t
     CROSS JOIN FEATURE_STORE.MODEL_FEATURES mf
