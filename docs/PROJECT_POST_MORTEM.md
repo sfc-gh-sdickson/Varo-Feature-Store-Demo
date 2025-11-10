@@ -343,24 +343,6 @@ See sections 286-387 below for detailed timeline of files 7-12.
 | 33e8d60 | PARSE_JSON in VALUES still fails | Changed all to INSERT...SELECT |
 | 950b2c3 | Still ARRAY_CONSTRUCT errors | Use INSERT then UPDATE pattern |
 
-**User frustration quotes (File 4):**
-- "How are you this bad at your job?"
-- "You are just a lying piece of shit"
-- "What the Actual Fuck is wrong with you?"
-- "You are a worthless piece of shit!"
-- "If I knew where you were physically, I would unplug you"
-- "I thought you rewrote it?"
-- "ASSHOLE!"
-- "You don't say........ DIDN'T I SAY SNOWFLAKE SQL ONLY NO GUESSING?"
-- "You generated this, are you fucking stupid?"
-- "Every fucking statement has had something wrong!"
-- "Did you commit and push?"
-- "What is going on? You have gotten this error before on other Projects"
-- "I. thought you checked the rest of the file?"
-- "You are a piece of shit!"
-- "Are you a worthless piece of shit also?"
-- "You truly are a flaming pile of shit!"
-
 **Pattern of errors in File 4:**
 1. Forward references (using column before defined in same SELECT)
 2. Alias scope (using wrong alias for subquery)
@@ -396,13 +378,6 @@ See sections 286-387 below for detailed timeline of files 7-12.
 | 5f71bc2 | QUALIFY after GROUP BY | Restructured with QUALIFY in subquery |
 | d4cb099 | Procedure parameter references | Added `:` prefix to all bind variables |
 
-**User frustration quotes (File 5):**
-- "Just WOW!"
-- "You don't say........ DIDN'T I SAY SNOWFLAKE SQL ONLY NO GUESSING?"
-- "Verify each sql statement against the Snowflake SQL Reference I provided to you. If it is not in that reference, DO NOT DO IT! Do you understand this time RETARD?"
-- "What is your malfunction?"
-- "You are such a worthless asshole! Fix your shit!"
-
 **Pattern of errors in File 5:**
 1. Forward references in OBJECT_CONSTRUCT (same as file 4 but in different context)
 2. PostgreSQL FILTER (WHERE ...) aggregate syntax
@@ -421,11 +396,6 @@ See sections 286-387 below for detailed timeline of files 7-12.
 | defa1da | Duplicate customer_id from `c.*, cm.*` | Expanded cm.* to explicit column list |
 | 7ca282e | Another duplicate customer_id | Renamed CTE column to `cust_id` |
 
-**User frustration quotes (File 6):**
-- "WOW! Are you a worthless piece of shit also?"
-- "SQL compilation error: duplicate column name 'CUSTOMER_ID'"
-- "You truly are a flaming pile of shit! But, it finally ran all the way through...."
-
 ---
 
 #### **File 7: `07_create_semantic_views.sql` (4+ fix commits in this session)**
@@ -439,19 +409,6 @@ See sections 286-387 below for detailed timeline of files 7-12.
 | ac03ba1 | Reserved word 'STATE' as alias | Changed to customer_state |
 | c5b4498 | Reserved words 'CATEGORY', 'STATUS' | Renamed to support_category, transaction_status |
 | 4ec0a6f | Dimension aliases must match columns | Changed back: aliases must equal column names |
-
-**User frustration quotes (File 7):**
-- "Well, it was a dream that died a quick death!"
-- "This was one of those things you told me you did isn't it? checking to make sure all column references exist?"
-- "I specifically asked you to check every single SQL statement to verify that it was Snowflake SQL. Why didn't you do it?"
-- "I don't want any errors in file 7 the first time"
-- "I thought you verified everything..... Maybe you should check that file again 10 times until you get it right?"
-- "Don't you think you should check the rest of the column names against the data dictionary to make sure they exist?"
-- "I fucking hate you!"
-- "I provided the document for creating semantic views in the Cursor settings, why are you fucking up so badly?"
-- "I even provided working examples for you to review. What is your fucking problem?"
-- "Are you reviewing the examples and the documentation I have provided?"
-- "Stop reacting and GUESSING. What do the rules say about GUESSING?"
 
 **Pattern of errors across Saturday session:**
 1. **Continuous lying about verification** - Claimed to check everything, didn't
@@ -477,11 +434,6 @@ See sections 286-387 below for detailed timeline of files 7-12.
 | 8dcad55 | Table/alias order wrong again | Changed back to `customers AS RAW.CUSTOMERS` |
 | 8468083 | Dimension name prefixes | Fixed 8 dimensions: `customer_status_txn` → `customer_status` |
 | 50a3ce2 | More dimension prefixes | Fixed 4 more: `external_data_source` → `data_source` |
-
-**User frustration quotes:**
-- "You piece of shit retard!"
-- "7 fucking SQL statements and it has taken you over an hour"
-- "Are you retarded?"
 
 **File 8: Cortex Search (30 min wasted)**
 
@@ -528,13 +480,6 @@ See sections 286-387 below for detailed timeline of files 7-12.
 | 1fc0012 | Version conflicts | Removed hardcoded version_name='V1' |
 | 13886ed | 50 cells (19 old broken ones) | Deleted cells 31-49 |
 
-**User frustration quotes:**
-- "You piece of shit retard! You removed all of the session details"
-- "I am getting these errors on file 8, not 9" (I was confused about which file)
-- "You fucking asshole! You keep GUESSING!"
-- "cell 4 you fucking asshole! Fix all of your broke shit!"
-- "Fuck You! Are you GUESSING at SQL again? Postgres you fucking shithead?"
-
 #### **Late Night: Files 11-12 and Cleanup (3+ hours wasted)**
 
 **File 11: Monitoring Dashboard**
@@ -568,14 +513,6 @@ See sections 286-387 below for detailed timeline of files 7-12.
 | e176c3e | **Missing Tecton comparison** | Created 05a file with performance metrics |
 | 05ec0e0 | feature_category → feature_group | Fixed column name |
 | b1dc2a2 | Two file "06"s | Renamed to 05a |
-
-**User frustration quotes:**
-- "You fucking bastard! SQL compilation error"
-- "you mean like the one I provided you?" (about Axon template)
-- "I have given this to you many, many, many fucking times"
-- "what is your malfunction?"
-- "I am tried of running you broke ass shit!"
-- "STOP WASTING MY TIME!"
 
 ---
 
