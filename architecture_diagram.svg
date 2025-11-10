@@ -28,40 +28,40 @@
   <text x="100" y="240" class="layer-label">Agent Tools:</text>
   
   <!-- Cortex Analyst -->
-  <rect x="50" y="260" width="240" height="160" fill="#00aa55" stroke="#008844" stroke-width="2" rx="8"/>
-  <text x="170" y="290" class="box-title" text-anchor="middle">Cortex Analyst</text>
-  <text x="170" y="315" class="box-subtitle" text-anchor="middle">Text-to-SQL</text>
-  <text x="170" y="340" class="box-item" text-anchor="middle">• Customer Banking</text>
-  <text x="170" y="360" class="box-item" text-anchor="middle">• Transaction Payment</text>
-  <text x="170" y="380" class="box-item" text-anchor="middle">• Credit Risk</text>
-  <text x="170" y="405" class="box-item" text-anchor="middle" font-weight="bold">3 Semantic Views</text>
+  <rect x="48" y="260" width="240" height="160" fill="#00aa55" stroke="#008844" stroke-width="2" rx="8"/>
+  <text x="168" y="290" class="box-title" text-anchor="middle">Cortex Analyst</text>
+  <text x="168" y="315" class="box-subtitle" text-anchor="middle">Text-to-SQL</text>
+  <text x="168" y="340" class="box-item" text-anchor="middle">• Customer Banking</text>
+  <text x="168" y="360" class="box-item" text-anchor="middle">• Transaction Payment</text>
+  <text x="168" y="380" class="box-item" text-anchor="middle">• Credit Risk</text>
+  <text x="168" y="405" class="box-item" text-anchor="middle" font-weight="bold">3 Semantic Views</text>
   
   <!-- Feature Store -->
-  <rect x="310" y="260" width="240" height="160" fill="#ff6600" stroke="#cc5200" stroke-width="2" rx="8"/>
-  <text x="430" y="290" class="box-title" text-anchor="middle">Feature Store</text>
-  <text x="430" y="315" class="box-subtitle" text-anchor="middle">SQL-Based Features</text>
-  <text x="430" y="340" class="box-item" text-anchor="middle">• Real-time (Streams)</text>
-  <text x="430" y="360" class="box-item" text-anchor="middle">• Batch (Dynamic Tables)</text>
-  <text x="430" y="380" class="box-item" text-anchor="middle">• Point-in-Time</text>
-  <text x="430" y="405" class="box-item" text-anchor="middle" font-weight="bold">200+ Features</text>
+  <rect x="336" y="260" width="240" height="160" fill="#ff6600" stroke="#cc5200" stroke-width="2" rx="8"/>
+  <text x="456" y="290" class="box-title" text-anchor="middle">Feature Store</text>
+  <text x="456" y="315" class="box-subtitle" text-anchor="middle">SQL-Based Features</text>
+  <text x="456" y="340" class="box-item" text-anchor="middle">• Real-time (Streams)</text>
+  <text x="456" y="360" class="box-item" text-anchor="middle">• Batch (Dynamic Tables)</text>
+  <text x="456" y="380" class="box-item" text-anchor="middle">• Point-in-Time</text>
+  <text x="456" y="405" class="box-item" text-anchor="middle" font-weight="bold">200+ Features</text>
   
   <!-- ML Models -->
-  <rect x="570" y="260" width="240" height="160" fill="#9933cc" stroke="#7722aa" stroke-width="2" rx="8"/>
-  <text x="690" y="290" class="box-title" text-anchor="middle">ML Models</text>
-  <text x="690" y="315" class="box-subtitle" text-anchor="middle">Predictions</text>
-  <text x="690" y="340" class="box-item" text-anchor="middle">• Fraud Detection</text>
-  <text x="690" y="360" class="box-item" text-anchor="middle">• Advance Eligibility</text>
-  <text x="690" y="380" class="box-item" text-anchor="middle">• Customer LTV</text>
-  <text x="690" y="405" class="box-item" text-anchor="middle" font-weight="bold">5 Procedures</text>
+  <rect x="624" y="260" width="240" height="160" fill="#9933cc" stroke="#7722aa" stroke-width="2" rx="8"/>
+  <text x="744" y="290" class="box-title" text-anchor="middle">ML Models</text>
+  <text x="744" y="315" class="box-subtitle" text-anchor="middle">Predictions</text>
+  <text x="744" y="340" class="box-item" text-anchor="middle">• Fraud Detection</text>
+  <text x="744" y="360" class="box-item" text-anchor="middle">• Advance Eligibility</text>
+  <text x="744" y="380" class="box-item" text-anchor="middle">• Customer LTV</text>
+  <text x="744" y="405" class="box-item" text-anchor="middle" font-weight="bold">5 Procedures</text>
   
   <!-- Cortex Search -->
-  <rect x="830" y="260" width="240" height="160" fill="#ee4400" stroke="#cc3300" stroke-width="2" rx="8"/>
-  <text x="950" y="290" class="box-title" text-anchor="middle">Cortex Search</text>
-  <text x="950" y="315" class="box-subtitle" text-anchor="middle">Semantic Search</text>
-  <text x="950" y="340" class="box-item" text-anchor="middle">• Support Transcripts</text>
-  <text x="950" y="360" class="box-item" text-anchor="middle">• Compliance Docs</text>
-  <text x="950" y="380" class="box-item" text-anchor="middle">• Product Knowledge</text>
-  <text x="950" y="405" class="box-item" text-anchor="middle" font-weight="bold">25K+ Documents</text>
+  <rect x="912" y="260" width="240" height="160" fill="#ee4400" stroke="#cc3300" stroke-width="2" rx="8"/>
+  <text x="1032" y="290" class="box-title" text-anchor="middle">Cortex Search</text>
+  <text x="1032" y="315" class="box-subtitle" text-anchor="middle">Semantic Search</text>
+  <text x="1032" y="340" class="box-item" text-anchor="middle">• Support Transcripts</text>
+  <text x="1032" y="360" class="box-item" text-anchor="middle">• Compliance Docs</text>
+  <text x="1032" y="380" class="box-item" text-anchor="middle">• Product Knowledge</text>
+  <text x="1032" y="405" class="box-item" text-anchor="middle" font-weight="bold">25K+ Documents</text>
   
   <!-- LAYER 3: Data Layer -->
   <text x="100" y="460" class="layer-label">Data Foundation:</text>
@@ -97,22 +97,22 @@
   <text x="790" y="645" class="box-item" text-anchor="middle" font-weight="bold">Ready for Intelligence Agent</text>
   
   <!-- Arrows from Agent to Tools -->
-  <path d="M 400,200 L 170,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 500,200 L 430,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 700,200 L 690,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 800,200 L 950,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 400,200 L 168,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500,200 L 456,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 700,200 L 744,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 800,200 L 1032,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
   
   <!-- Arrows from Tools to Data -->
-  <path d="M 170,420 L 190,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 430,420 L 490,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 690,420 L 790,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 950,420 L 790,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 168,420 L 190,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 456,420 L 490,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 744,420 L 790,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 1032,420 L 790,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
   
   <!-- Feature Flow Arrow -->
-  <path d="M 550,340 L 570,340" stroke="#ff6600" stroke-width="6" fill="none"/>
-  <polygon points="570,333 582,340 570,347" fill="#ff6600"/>
-  <rect x="540" y="310" width="70" height="22" fill="white" stroke="#ff6600" stroke-width="1" rx="3"/>
-  <text x="575" y="326" font-size="13" font-weight="bold" fill="#ff6600" text-anchor="middle">Feature Flow</text>
+  <path d="M 576,340 L 624,340" stroke="#ff6600" stroke-width="6" fill="none"/>
+  <polygon points="624,333 636,340 624,347" fill="#ff6600"/>
+  <rect x="568" y="310" width="80" height="24" fill="white" stroke="#ff6600" stroke-width="2" rx="4"/>
+  <text x="608" y="328" font-size="14" font-weight="bold" fill="#ff6600" text-anchor="middle">Feature Flow</text>
   
   <!-- Tecton Comparison Box -->
   <rect x="50" y="700" width="1100" height="150" fill="#e8f4f8" stroke="#0066cc" stroke-width="2" rx="8"/>
