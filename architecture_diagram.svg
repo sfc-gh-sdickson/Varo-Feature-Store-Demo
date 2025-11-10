@@ -67,34 +67,34 @@
   <text x="100" y="460" class="layer-label">Data Foundation:</text>
   
   <!-- RAW Schema -->
-  <rect x="50" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
-  <text x="190" y="510" class="box-title" text-anchor="middle">RAW Schema</text>
-  <text x="190" y="535" class="box-subtitle" text-anchor="middle">Core Banking Tables (13)</text>
-  <text x="190" y="560" class="box-item" text-anchor="middle">Customers | Accounts | Transactions</text>
-  <text x="190" y="580" class="box-item" text-anchor="middle">Cards | Deposits | Advances</text>
-  <text x="190" y="600" class="box-item" text-anchor="middle">Credit Apps | Support | Compliance</text>
-  <text x="190" y="625" class="box-item" text-anchor="middle">Merchant Categories | External Data</text>
-  <text x="190" y="645" class="box-item" text-anchor="middle" font-weight="bold">2M Customers | 50M+ Txns</text>
+  <rect x="90" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
+  <text x="230" y="510" class="box-title" text-anchor="middle">RAW Schema</text>
+  <text x="230" y="535" class="box-subtitle" text-anchor="middle">Core Banking Tables (13)</text>
+  <text x="230" y="560" class="box-item" text-anchor="middle">Customers | Accounts | Transactions</text>
+  <text x="230" y="580" class="box-item" text-anchor="middle">Cards | Deposits | Advances</text>
+  <text x="230" y="600" class="box-item" text-anchor="middle">Credit Apps | Support | Compliance</text>
+  <text x="230" y="625" class="box-item" text-anchor="middle">Merchant Categories | External Data</text>
+  <text x="230" y="645" class="box-item" text-anchor="middle" font-weight="bold">2M Customers | 50M+ Txns</text>
   
   <!-- FEATURE_STORE Schema -->
-  <rect x="350" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
-  <text x="490" y="510" class="box-title" text-anchor="middle">FEATURE_STORE Schema</text>
-  <text x="490" y="535" class="box-subtitle" text-anchor="middle">Feature Management (9 Tables)</text>
-  <text x="490" y="560" class="box-item" text-anchor="middle">Feature Definitions | Values</text>
-  <text x="490" y="580" class="box-item" text-anchor="middle">Online Features | Training Sets</text>
-  <text x="490" y="600" class="box-item" text-anchor="middle">Monitoring | Lineage | Statistics</text>
-  <text x="490" y="625" class="box-item" text-anchor="middle">Model Features | Compute Logs</text>
-  <text x="490" y="645" class="box-item" text-anchor="middle" font-weight="bold">Sub-Second Serving</text>
+  <rect x="460" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
+  <text x="600" y="510" class="box-title" text-anchor="middle">FEATURE_STORE Schema</text>
+  <text x="600" y="535" class="box-subtitle" text-anchor="middle">Feature Management (9 Tables)</text>
+  <text x="600" y="560" class="box-item" text-anchor="middle">Feature Definitions | Values</text>
+  <text x="600" y="580" class="box-item" text-anchor="middle">Online Features | Training Sets</text>
+  <text x="600" y="600" class="box-item" text-anchor="middle">Monitoring | Lineage | Statistics</text>
+  <text x="600" y="625" class="box-item" text-anchor="middle">Model Features | Compute Logs</text>
+  <text x="600" y="645" class="box-item" text-anchor="middle" font-weight="bold">Sub-Second Serving</text>
   
   <!-- ANALYTICS Schema -->
-  <rect x="650" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
-  <text x="790" y="510" class="box-title" text-anchor="middle">ANALYTICS Schema</text>
-  <text x="790" y="535" class="box-subtitle" text-anchor="middle">Business Logic</text>
-  <text x="790" y="560" class="box-item" text-anchor="middle">Analytical Views (10)</text>
-  <text x="790" y="580" class="box-item" text-anchor="middle">Semantic Views (3)</text>
-  <text x="790" y="600" class="box-item" text-anchor="middle">ML Procedures (5)</text>
-  <text x="790" y="625" class="box-item" text-anchor="middle">Customer 360 | Risk Metrics</text>
-  <text x="790" y="645" class="box-item" text-anchor="middle" font-weight="bold">Ready for Intelligence Agent</text>
+  <rect x="830" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
+  <text x="970" y="510" class="box-title" text-anchor="middle">ANALYTICS Schema</text>
+  <text x="970" y="535" class="box-subtitle" text-anchor="middle">Business Logic</text>
+  <text x="970" y="560" class="box-item" text-anchor="middle">Analytical Views (10)</text>
+  <text x="970" y="580" class="box-item" text-anchor="middle">Semantic Views (3)</text>
+  <text x="970" y="600" class="box-item" text-anchor="middle">ML Procedures (5)</text>
+  <text x="970" y="625" class="box-item" text-anchor="middle">Customer 360 | Risk Metrics</text>
+  <text x="970" y="645" class="box-item" text-anchor="middle" font-weight="bold">Ready for Intelligence Agent</text>
   
   <!-- Arrows from Agent to Tools -->
   <path d="M 400,200 L 168,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
@@ -103,10 +103,10 @@
   <path d="M 800,200 L 1032,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
   
   <!-- Arrows from Tools to Data -->
-  <path d="M 168,420 L 190,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 456,420 L 490,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 744,420 L 790,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-  <path d="M 1032,420 L 790,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 168,420 L 230,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 456,420 L 600,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 744,420 L 970,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 1032,420 L 970,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
   
   <!-- Feature Flow Arrow -->
   <path d="M 576,340 L 624,340" stroke="#ff6600" stroke-width="6" fill="none"/>
