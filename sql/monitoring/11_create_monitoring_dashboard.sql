@@ -215,7 +215,7 @@ WITH warehouse_usage AS (
     SELECT 
         warehouse_name,
         DATE(start_time) as usage_date,
-        SUM(credits_used) as daily_credits,
+        SUM(credits_used_cloud_services) as daily_credits,
         COUNT(DISTINCT query_id) as query_count,
         AVG(execution_time) / 1000 as avg_query_time_seconds,
         MAX(execution_time) / 1000 as max_query_time_seconds
