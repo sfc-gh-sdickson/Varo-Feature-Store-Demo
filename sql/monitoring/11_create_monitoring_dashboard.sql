@@ -430,5 +430,50 @@ SELECT
 FROM health_components
 GROUP BY ALL;
 
+-- ============================================================================
+-- Create Alert Procedure for Automated Monitoring
+-- ============================================================================
+CREATE OR REPLACE PROCEDURE MONITOR_SYSTEM_HEALTH()
+RETURNS VARCHAR
+LANGUAGE SQL
+AS
+$$
+BEGIN
+    LET health_score NUMBER;
+    LET critical_alerts NUMBER;
+    LET message VARCHAR;
+    
+    -- Get overall health score
+    SELECT overall_health_score INTO :health_score
+    FROM V_SYSTEM_HEALTH_SCORE;
+    
+    -- Count critical alerts
+    SELECT COUNT(*) INTO :critical_alerts
+    FROM V_DATA_QUALITY_ALERTS
+    WHERE severity = 'ERROR';
+    
+    -- Generate alert message
+    IF (:health_score < 70 OR :critical_alerts > 0) THEN
+        message := 'ALERT: System health score is ' || :health_score || 
+                   ' with ' || :critical_alerts || ' critical issues.';
+        RETURN :message;
+    ELSE
+        RETURN 'System health is good. Score: ' || :health_score;
+    END IF;
+END;
+$$;
+
+-- ============================================================================
+-- Schedule Monitoring Task
+-- ============================================================================
+CREATE OR REPLACE TASK HOURLY_HEALTH_MONITORING
+    WAREHOUSE = VARO_WH
+    SCHEDULE = '60 MINUTES'
+AS
+    CALL MONITOR_SYSTEM_HEALTH();
+
+-- Start the monitoring task
+ALTER TASK HOURLY_HEALTH_MONITORING RESUME;
+
 -- Display confirmation
 SELECT 'Monitoring dashboard views and tasks created successfully' AS STATUS;
