@@ -39,6 +39,12 @@ This solution demonstrates how Varo can migrate from Tecton (now part of Databri
 
 This Snowflake Intelligence solution showcases:
 
+### Architecture Diagram
+
+<img src="architecture_diagram.svg" width="100%">
+
+*Figure: Varo Intelligence Agent & Feature Store Architecture - showing the integration of Cortex Analyst, Feature Store, ML Models, and Cortex Search*
+
 ### Feature Store Capabilities
 - **Feature Engineering**: SQL-based feature definitions with versioning
 - **Feature Registry**: Centralized catalog of all features with metadata
