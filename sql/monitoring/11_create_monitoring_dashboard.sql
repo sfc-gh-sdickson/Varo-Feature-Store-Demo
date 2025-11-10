@@ -166,9 +166,9 @@ SELECT
     prediction_count,
     high_risk_flagged,
     DIV0NULL(high_risk_flagged, prediction_count) as flag_rate,
-    true_positives,
-    DIV0NULL(true_positives, high_risk_flagged) as precision,
-    false_negatives,
+    high_risk_declined,
+    DIV0NULL(high_risk_declined, high_risk_flagged) as precision,
+    low_risk_declined,
     avg_risk_score,
     -- Performance trend
     avg_risk_score - LAG(avg_risk_score, 7) OVER (PARTITION BY model_name ORDER BY prediction_date) as score_change_7d
