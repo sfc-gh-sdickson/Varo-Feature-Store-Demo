@@ -434,33 +434,44 @@ GROUP BY ALL;
 -- Create Alert Procedure for Automated Monitoring
 -- ============================================================================
 CREATE OR REPLACE PROCEDURE MONITOR_SYSTEM_HEALTH()
-RETURNS VARCHAR
-LANGUAGE SQL
+RETURNS STRING
+LANGUAGE PYTHON
+RUNTIME_VERSION = '3.10'
+PACKAGES = ('snowflake-snowpark-python')
+HANDLER = 'monitor_health'
 AS
 $$
-BEGIN
-    LET health_score NUMBER;
-    LET critical_alerts NUMBER;
-    LET message VARCHAR;
+def monitor_health(session):
+    import json
     
-    -- Get overall health score
-    SELECT overall_health_score INTO :health_score
-    FROM V_SYSTEM_HEALTH_SCORE;
+    # Get overall health score
+    health_query = "SELECT overall_health_score FROM ANALYTICS.V_SYSTEM_HEALTH_SCORE"
+    health_result = session.sql(health_query).collect()
     
-    -- Count critical alerts
-    SELECT COUNT(*) INTO :critical_alerts
-    FROM V_DATA_QUALITY_ALERTS
-    WHERE severity = 'ERROR';
+    if not health_result:
+        return json.dumps({"status": "ERROR", "message": "Could not retrieve health score"})
     
-    -- Generate alert message
-    IF (:health_score < 70 OR :critical_alerts > 0) THEN
-        message := 'ALERT: System health score is ' || :health_score || 
-                   ' with ' || :critical_alerts || ' critical issues.';
-        RETURN :message;
-    ELSE
-        RETURN 'System health is good. Score: ' || :health_score;
-    END IF;
-END;
+    health_score = int(health_result[0]['OVERALL_HEALTH_SCORE'])
+    
+    # Count critical alerts
+    alert_query = "SELECT COUNT(*) as alert_count FROM ANALYTICS.V_DATA_QUALITY_ALERTS WHERE severity = 'ERROR'"
+    alert_result = session.sql(alert_query).collect()
+    critical_alerts = int(alert_result[0]['ALERT_COUNT']) if alert_result else 0
+    
+    # Generate alert message
+    if health_score < 70 or critical_alerts > 0:
+        message = f"ALERT: System health score is {health_score} with {critical_alerts} critical issues."
+        status = "WARNING"
+    else:
+        message = f"System health is good. Score: {health_score}"
+        status = "HEALTHY"
+    
+    return json.dumps({
+        "status": status,
+        "health_score": health_score,
+        "critical_alerts": critical_alerts,
+        "message": message
+    })
 $$;
 
 -- ============================================================================
