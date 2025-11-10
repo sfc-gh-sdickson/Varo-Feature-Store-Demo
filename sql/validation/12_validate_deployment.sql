@@ -185,15 +185,7 @@ LEFT JOIN INFORMATION_SCHEMA.FUNCTIONS f
 -- ============================================================================
 SELECT 'VALIDATING CORTEX SEARCH SERVICES' as validation_step;
 
-SELECT 
-    SERVICE_NAME,
-    CASE 
-        WHEN SERVICE_NAME IS NOT NULL THEN 'PASS'
-        ELSE 'FAIL'
-    END as status
-FROM INFORMATION_SCHEMA.CORTEX_SEARCH_SERVICES
-WHERE SCHEMA_NAME = 'RAW'
-    AND DATABASE_NAME = 'VARO_INTELLIGENCE';
+SHOW CORTEX SEARCH SERVICES IN SCHEMA RAW;
 
 -- ============================================================================
 -- 9. Data Quality Checks
