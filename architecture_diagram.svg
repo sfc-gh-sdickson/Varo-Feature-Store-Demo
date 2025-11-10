@@ -1,267 +1,134 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="1200" height="900" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900">
+  <defs>
+    <style>
+      .title { font: bold 28px Arial, sans-serif; fill: #1a1a1a; }
+      .subtitle { font: 16px Arial, sans-serif; fill: #4a4a4a; }
+      .box-title { font: bold 18px Arial, sans-serif; fill: white; }
+      .box-subtitle { font: 14px Arial, sans-serif; fill: white; }
+      .box-item { font: 12px Arial, sans-serif; fill: white; }
+      .layer-label { font: bold 20px Arial, sans-serif; fill: #2a2a2a; }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#f8f9fa"/>
+  
   <!-- Title -->
-  <text x="600" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle">
-    Varo Intelligence Agent & Feature Store Architecture
-  </text>
+  <text x="600" y="40" class="title" text-anchor="middle">Varo Intelligence Agent &amp; Feature Store Architecture</text>
+  <text x="600" y="65" class="subtitle" text-anchor="middle">Snowflake-Native ML Platform for Digital Banking</text>
   
-  <!-- Layer 1: Intelligence Agent (Top) -->
-  <g id="layer1">
-    <rect x="300" y="80" width="600" height="100" fill="#0088CC" stroke="#005580" stroke-width="2" rx="10"/>
-    <text x="600" y="110" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">
-      Varo Intelligence Agent
-    </text>
-    <text x="600" y="135" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">
-      Natural Language Interface | Orchestration Layer
-    </text>
-    <text x="600" y="155" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">
-      Banking Questions → SQL/ML → Insights
-    </text>
-  </g>
+  <!-- LAYER 1: Intelligence Agent -->
+  <rect x="200" y="100" width="800" height="100" fill="#0066cc" stroke="#004d99" stroke-width="3" rx="10"/>
+  <text x="600" y="135" class="box-title" text-anchor="middle">Varo Intelligence Agent</text>
+  <text x="600" y="160" class="box-subtitle" text-anchor="middle">Natural Language → SQL/ML → Insights</text>
+  <text x="600" y="180" class="box-item" text-anchor="middle">Cortex Analyst | Cortex Search | ML Procedures</text>
   
-  <!-- Layer 2A: Cortex Analyst (Left) -->
-  <g id="layer2a">
-    <rect x="50" y="220" width="280" height="140" fill="#00AA44" stroke="#008833" stroke-width="2" rx="10"/>
-    <text x="190" y="250" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">
-      Cortex Analyst
-    </text>
-    <text x="190" y="275" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">
-      Semantic Views (3)
-    </text>
-    <text x="190" y="295" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Customer Banking Intelligence
-    </text>
-    <text x="190" y="310" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Transaction Payment Intelligence
-    </text>
-    <text x="190" y="325" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Credit Risk Intelligence
-    </text>
-    <text x="190" y="345" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      KPIs | Metrics | Analytics
-    </text>
-  </g>
+  <!-- LAYER 2: Tools Layer -->
+  <text x="100" y="240" class="layer-label">Agent Tools:</text>
   
-  <!-- Layer 2B: Feature Store (Center) -->
-  <g id="layer2b">
-    <rect x="360" y="220" width="280" height="140" fill="#FF6600" stroke="#CC4400" stroke-width="2" rx="10"/>
-    <text x="500" y="250" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">
-      Feature Store
-    </text>
-    <text x="500" y="275" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">
-      SQL-Based Feature Engineering
-    </text>
-    <text x="500" y="295" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Real-time Features (Streams)
-    </text>
-    <text x="500" y="310" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Batch Features (Dynamic Tables)
-    </text>
-    <text x="500" y="325" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Point-in-Time Retrieval
-    </text>
-    <text x="500" y="345" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      Replaces Tecton | Auto-Scaling
-    </text>
-  </g>
+  <!-- Cortex Analyst -->
+  <rect x="50" y="260" width="240" height="160" fill="#00aa55" stroke="#008844" stroke-width="2" rx="8"/>
+  <text x="170" y="290" class="box-title" text-anchor="middle">Cortex Analyst</text>
+  <text x="170" y="315" class="box-subtitle" text-anchor="middle">Text-to-SQL</text>
+  <text x="170" y="340" class="box-item" text-anchor="middle">• Customer Banking</text>
+  <text x="170" y="360" class="box-item" text-anchor="middle">• Transaction Payment</text>
+  <text x="170" y="380" class="box-item" text-anchor="middle">• Credit Risk</text>
+  <text x="170" y="405" class="box-item" text-anchor="middle" font-weight="bold">3 Semantic Views</text>
   
-  <!-- Layer 2C: ML Functions (Center-Right) -->
-  <g id="layer2c">
-    <rect x="670" y="220" width="230" height="140" fill="#9933CC" stroke="#6600AA" stroke-width="2" rx="10"/>
-    <text x="785" y="250" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">
-      ML Functions
-    </text>
-    <text x="785" y="275" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">
-      Real-time Predictions
-    </text>
-    <text x="785" y="295" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Fraud Scoring
-    </text>
-    <text x="785" y="310" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Advance Eligibility
-    </text>
-    <text x="785" y="325" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Credit Limits
-    </text>
-    <text x="785" y="345" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Customer LTV
-    </text>
-  </g>
+  <!-- Feature Store -->
+  <rect x="310" y="260" width="240" height="160" fill="#ff6600" stroke="#cc5200" stroke-width="2" rx="8"/>
+  <text x="430" y="290" class="box-title" text-anchor="middle">Feature Store</text>
+  <text x="430" y="315" class="box-subtitle" text-anchor="middle">SQL-Based Features</text>
+  <text x="430" y="340" class="box-item" text-anchor="middle">• Real-time (Streams)</text>
+  <text x="430" y="360" class="box-item" text-anchor="middle">• Batch (Dynamic Tables)</text>
+  <text x="430" y="380" class="box-item" text-anchor="middle">• Point-in-Time</text>
+  <text x="430" y="405" class="box-item" text-anchor="middle" font-weight="bold">200+ Features</text>
   
-  <!-- Layer 2D: Cortex Search (Far Right) -->
-  <g id="layer2d">
-    <rect x="930" y="220" width="220" height="140" fill="#EE4400" stroke="#CC2200" stroke-width="2" rx="10"/>
-    <text x="1040" y="250" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">
-      Cortex Search
-    </text>
-    <text x="1040" y="275" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">
-      Unstructured Data (3)
-    </text>
-    <text x="1040" y="295" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Support Transcripts
-    </text>
-    <text x="1040" y="310" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Compliance Docs
-    </text>
-    <text x="1040" y="325" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      • Product Knowledge
-    </text>
-    <text x="1040" y="345" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
-      Semantic Search | RAG
-    </text>
-  </g>
+  <!-- ML Models -->
+  <rect x="570" y="260" width="240" height="160" fill="#9933cc" stroke="#7722aa" stroke-width="2" rx="8"/>
+  <text x="690" y="290" class="box-title" text-anchor="middle">ML Models</text>
+  <text x="690" y="315" class="box-subtitle" text-anchor="middle">Predictions</text>
+  <text x="690" y="340" class="box-item" text-anchor="middle">• Fraud Detection</text>
+  <text x="690" y="360" class="box-item" text-anchor="middle">• Advance Eligibility</text>
+  <text x="690" y="380" class="box-item" text-anchor="middle">• Customer LTV</text>
+  <text x="690" y="405" class="box-item" text-anchor="middle" font-weight="bold">5 Procedures</text>
   
-  <!-- Layer 3: Data Foundation -->
-  <g id="layer3">
-    <rect x="50" y="400" width="1100" height="180" fill="#444499" stroke="#333388" stroke-width="2" rx="10"/>
-    <text x="600" y="430" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">
-      Banking Data Foundation
-    </text>
-    
-    <!-- RAW Schema -->
-    <rect x="70" y="450" width="250" height="110" fill="#5555AA" stroke="#4444AA" stroke-width="1" rx="5"/>
-    <text x="195" y="470" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
-      RAW Schema (13 Tables)
-    </text>
-    <text x="195" y="490" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Customers | Accounts | Transactions
-    </text>
-    <text x="195" y="505" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Cards | Direct Deposits | Cash Advances
-    </text>
-    <text x="195" y="520" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Credit Apps | Support | Compliance
-    </text>
-    <text x="195" y="540" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">
-      2M Customers | 50M+ Transactions
-    </text>
-    
-    <!-- FEATURE_STORE Schema -->
-    <rect x="340" y="450" width="280" height="110" fill="#5555AA" stroke="#4444AA" stroke-width="1" rx="5"/>
-    <text x="480" y="470" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
-      FEATURE_STORE Schema (9 Tables)
-    </text>
-    <text x="480" y="490" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Feature Definitions | Feature Values
-    </text>
-    <text x="480" y="505" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Online Features | Training Datasets
-    </text>
-    <text x="480" y="520" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Feature Monitoring | Lineage
-    </text>
-    <text x="480" y="540" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">
-      200+ Features | Sub-second Serving
-    </text>
-    
-    <!-- ANALYTICS Schema -->
-    <rect x="640" y="450" width="250" height="110" fill="#5555AA" stroke="#4444AA" stroke-width="1" rx="5"/>
-    <text x="765" y="470" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
-      ANALYTICS Schema
-    </text>
-    <text x="765" y="490" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Analytical Views (10)
-    </text>
-    <text x="765" y="505" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Semantic Views (3)
-    </text>
-    <text x="765" y="520" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      ML Functions (5)
-    </text>
-    <text x="765" y="540" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">
-      Business Logic | Predictions
-    </text>
-    
-    <!-- Unstructured Data -->
-    <rect x="910" y="450" width="220" height="110" fill="#5555AA" stroke="#4444AA" stroke-width="1" rx="5"/>
-    <text x="1020" y="470" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
-      Unstructured Data
-    </text>
-    <text x="1020" y="490" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      25K Support Transcripts
-    </text>
-    <text x="1020" y="505" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Compliance Documents
-    </text>
-    <text x="1020" y="520" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">
-      Product Knowledge Base
-    </text>
-    <text x="1020" y="540" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">
-      Indexed for Search
-    </text>
-  </g>
+  <!-- Cortex Search -->
+  <rect x="830" y="260" width="240" height="160" fill="#ee4400" stroke="#cc3300" stroke-width="2" rx="8"/>
+  <text x="950" y="290" class="box-title" text-anchor="middle">Cortex Search</text>
+  <text x="950" y="315" class="box-subtitle" text-anchor="middle">Semantic Search</text>
+  <text x="950" y="340" class="box-item" text-anchor="middle">• Support Transcripts</text>
+  <text x="950" y="360" class="box-item" text-anchor="middle">• Compliance Docs</text>
+  <text x="950" y="380" class="box-item" text-anchor="middle">• Product Knowledge</text>
+  <text x="950" y="405" class="box-item" text-anchor="middle" font-weight="bold">25K+ Documents</text>
   
-  <!-- Connections -->
-  <!-- Agent to Components -->
-  <line x1="400" y1="180" x2="190" y2="220" stroke="#666" stroke-width="2"/>
-  <line x1="500" y1="180" x2="500" y2="220" stroke="#666" stroke-width="2"/>
-  <line x1="700" y1="180" x2="785" y2="220" stroke="#666" stroke-width="2"/>
-  <line x1="800" y1="180" x2="1040" y2="220" stroke="#666" stroke-width="2"/>
+  <!-- LAYER 3: Data Layer -->
+  <text x="100" y="460" class="layer-label">Data Foundation:</text>
   
-  <!-- Components to Data -->
-  <line x1="190" y1="360" x2="190" y2="400" stroke="#666" stroke-width="2"/>
-  <line x1="500" y1="360" x2="480" y2="400" stroke="#666" stroke-width="2"/>
-  <line x1="785" y1="360" x2="765" y2="400" stroke="#666" stroke-width="2"/>
-  <line x1="1040" y1="360" x2="1020" y2="400" stroke="#666" stroke-width="2"/>
+  <!-- RAW Schema -->
+  <rect x="50" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
+  <text x="190" y="510" class="box-title" text-anchor="middle">RAW Schema</text>
+  <text x="190" y="535" class="box-subtitle" text-anchor="middle">Core Banking Tables (13)</text>
+  <text x="190" y="560" class="box-item" text-anchor="middle">Customers | Accounts | Transactions</text>
+  <text x="190" y="580" class="box-item" text-anchor="middle">Cards | Deposits | Advances</text>
+  <text x="190" y="600" class="box-item" text-anchor="middle">Credit Apps | Support | Compliance</text>
+  <text x="190" y="625" class="box-item" text-anchor="middle">Merchant Categories | External Data</text>
+  <text x="190" y="645" class="box-item" text-anchor="middle" font-weight="bold">2M Customers | 50M+ Txns</text>
   
-  <!-- Feature Store Flow -->
-  <path d="M 620 290 L 670 290" stroke="#FF6600" stroke-width="3" fill="none"/>
-  <polygon points="670,285 680,290 670,295" fill="#FF6600"/>
+  <!-- FEATURE_STORE Schema -->
+  <rect x="350" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
+  <text x="490" y="510" class="box-title" text-anchor="middle">FEATURE_STORE Schema</text>
+  <text x="490" y="535" class="box-subtitle" text-anchor="middle">Feature Management (9 Tables)</text>
+  <text x="490" y="560" class="box-item" text-anchor="middle">Feature Definitions | Values</text>
+  <text x="490" y="580" class="box-item" text-anchor="middle">Online Features | Training Sets</text>
+  <text x="490" y="600" class="box-item" text-anchor="middle">Monitoring | Lineage | Statistics</text>
+  <text x="490" y="625" class="box-item" text-anchor="middle">Model Features | Compute Logs</text>
+  <text x="490" y="645" class="box-item" text-anchor="middle" font-weight="bold">Sub-Second Serving</text>
   
-  <!-- Key Differentiators Box -->
-  <g id="differentiators">
-    <rect x="50" y="620" width="1100" height="120" fill="#f0f0f0" stroke="#333" stroke-width="2" rx="10"/>
-    <text x="600" y="650" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle">
-      Key Differentiators from Tecton
-    </text>
-    <text x="200" y="680" font-family="Arial, sans-serif" font-size="13" text-anchor="start">
-      • SQL-First: All features defined in SQL (no Python/Scala required)
-    </text>
-    <text x="200" y="700" font-family="Arial, sans-serif" font-size="13" text-anchor="start">
-      • Auto-Scaling: Serverless compute scales with demand
-    </text>
-    <text x="200" y="720" font-family="Arial, sans-serif" font-size="13" text-anchor="start">
-      • Unified Platform: Features, ML, and Analytics in one system
-    </text>
-    <text x="650" y="680" font-family="Arial, sans-serif" font-size="13" text-anchor="start">
-      • Streaming Support: Native streams for real-time features
-    </text>
-    <text x="650" y="700" font-family="Arial, sans-serif" font-size="13" text-anchor="start">
-      • Time Travel: Built-in backfill and historical features
-    </text>
-    <text x="650" y="720" font-family="Arial, sans-serif" font-size="13" text-anchor="start">
-      • Lower Cost: Pay only for compute used, no infrastructure
-    </text>
-  </g>
+  <!-- ANALYTICS Schema -->
+  <rect x="650" y="480" width="280" height="180" fill="#4466aa" stroke="#334488" stroke-width="2" rx="8"/>
+  <text x="790" y="510" class="box-title" text-anchor="middle">ANALYTICS Schema</text>
+  <text x="790" y="535" class="box-subtitle" text-anchor="middle">Business Logic</text>
+  <text x="790" y="560" class="box-item" text-anchor="middle">Analytical Views (10)</text>
+  <text x="790" y="580" class="box-item" text-anchor="middle">Semantic Views (3)</text>
+  <text x="790" y="600" class="box-item" text-anchor="middle">ML Procedures (5)</text>
+  <text x="790" y="625" class="box-item" text-anchor="middle">Customer 360 | Risk Metrics</text>
+  <text x="790" y="645" class="box-item" text-anchor="middle" font-weight="bold">Ready for Intelligence Agent</text>
   
-  <!-- Warehouses -->
-  <g id="warehouses">
-    <rect x="50" y="780" width="540" height="80" fill="#e6f2ff" stroke="#0066cc" stroke-width="2" rx="5"/>
-    <text x="320" y="805" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">
-      Compute Resources
-    </text>
-    <text x="150" y="830" font-family="Arial, sans-serif" font-size="12" text-anchor="start">
-      VARO_WH (X-SMALL): Queries & Analytics
-    </text>
-    <text x="150" y="850" font-family="Arial, sans-serif" font-size="12" text-anchor="start">
-      VARO_FEATURE_WH (SMALL): Feature Engineering & ML
-    </text>
-    <text x="400" y="830" font-family="Arial, sans-serif" font-size="12" text-anchor="start">
-      Auto-suspend after 5 minutes
-    </text>
-    <text x="400" y="850" font-family="Arial, sans-serif" font-size="12" text-anchor="start">
-      Auto-scale based on workload
-    </text>
-  </g>
+  <!-- Arrows from Agent to Tools -->
+  <path d="M 400,200 L 170,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 500,200 L 430,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 700,200 L 690,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 800,200 L 950,260" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
   
-  <!-- Data Flow Indicators -->
-  <text x="620" y="785" font-family="Arial, sans-serif" font-size="14" font-weight="bold">Data Flow:</text>
-  <text x="720" y="785" font-family="Arial, sans-serif" font-size="12">Real-time (Streaming)</text>
-  <line x1="880" y1="780" x2="920" y2="780" stroke="#FF6600" stroke-width="3"/>
+  <!-- Arrows from Tools to Data -->
+  <path d="M 170,420 L 190,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 430,420 L 490,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 690,420 L 790,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 950,420 L 790,480" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
   
-  <text x="720" y="810" font-family="Arial, sans-serif" font-size="12">Batch (Scheduled)</text>
-  <line x1="880" y1="805" x2="920" y2="805" stroke="#666" stroke-width="3" stroke-dasharray="5,5"/>
+  <!-- Feature Flow Arrow -->
+  <path d="M 550,340 L 570,340" stroke="#ff6600" stroke-width="4" fill="none"/>
+  <polygon points="570,335 580,340 570,345" fill="#ff6600"/>
+  <text x="560" y="330" class="box-item" font-size="10">Feature Flow</text>
   
-  <text x="720" y="835" font-family="Arial, sans-serif" font-size="12">Query (On-demand)</text>
-  <line x1="880" y1="830" x2="920" y2="830" stroke="#0088CC" stroke-width="3"/>
+  <!-- Tecton Comparison Box -->
+  <rect x="50" y="700" width="1100" height="150" fill="#e8f4f8" stroke="#0066cc" stroke-width="2" rx="8"/>
+  <text x="600" y="730" font-size="20" font-weight="bold" text-anchor="middle" fill="#0066cc">Key Advantages vs Tecton</text>
+  
+  <text x="100" y="765" font-size="14" fill="#2a2a2a">✓ SQL-First: All features in SQL (no Python/Scala)</text>
+  <text x="100" y="790" font-size="14" fill="#2a2a2a">✓ Auto-Scaling: Serverless compute scales automatically</text>
+  <text x="100" y="815" font-size="14" fill="#2a2a2a">✓ Unified Platform: Features, ML, Analytics in one system</text>
+  
+  <text x="650" y="765" font-size="14" fill="#2a2a2a">✓ Streaming: Native Streams for real-time features</text>
+  <text x="650" y="790" font-size="14" fill="#2a2a2a">✓ Time Travel: Built-in backfill &amp; history</text>
+  <text x="650" y="815" font-size="14" fill="#2a2a2a">✓ Lower Cost: Pay only for compute used</text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#666"/>
+    </marker>
+  </defs>
 </svg>
