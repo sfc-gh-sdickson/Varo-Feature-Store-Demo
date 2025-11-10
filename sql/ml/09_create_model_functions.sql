@@ -1,8 +1,8 @@
 -- ============================================================================
 -- Varo Intelligence Agent - ML Model Wrapper Procedures
 -- ============================================================================
--- Purpose: Create Python procedures that wrap ML models for banking predictions
---          These models integrate with the Feature Store for real-time inference
+-- Purpose: Create Python procedures that wrap Model Registry models
+--          These procedures call the registered models from the notebook
 -- Pattern based on: Axon template Python procedures
 -- ============================================================================
 
@@ -18,86 +18,65 @@ USE WAREHOUSE VARO_FEATURE_WH;
 DROP FUNCTION IF EXISTS SCORE_TRANSACTION_FRAUD(VARCHAR, NUMBER, VARCHAR, BOOLEAN);
 
 CREATE OR REPLACE PROCEDURE SCORE_TRANSACTION_FRAUD(
-    customer_id VARCHAR,
-    amount NUMBER,
-    merchant_category VARCHAR,
-    is_international BOOLEAN
+    CUSTOMER_ID VARCHAR,
+    AMOUNT NUMBER,
+    MERCHANT_CATEGORY VARCHAR,
+    IS_INTERNATIONAL BOOLEAN
 )
 RETURNS STRING
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.10'
-PACKAGES = ('snowflake-snowpark-python')
+PACKAGES = ('snowflake-ml-python', 'scikit-learn')
 HANDLER = 'score_fraud'
-COMMENT = 'Scores transaction fraud risk using real-time features from Feature Store'
+COMMENT = 'Calls FRAUD_DETECTION_MODEL from Model Registry to score transaction fraud risk'
 AS
 $$
 def score_fraud(session, customer_id, amount, merchant_category, is_international):
+    from snowflake.ml.registry import Registry
     import json
     
-    # Get real-time customer features from Feature Store
-    feature_query = f"""
-        SELECT 
-            feature_vector:txn_count_1h::NUMBER as velocity_1h,
-            feature_vector:txn_volume_30d::NUMBER as monthly_volume,
-            feature_vector:unique_merchants_30d::NUMBER as merchant_diversity,
-            feature_vector:risk_indicator::NUMBER as historical_risk
-        FROM FEATURE_STORE.ONLINE_FEATURES
-    WHERE entity_id = '{customer_id}' AND entity_type = 'CUSTOMER'
+    # Get model from registry
+    reg = Registry(session)
+    model = reg.get_model("FRAUD_DETECTION_MODEL").default
+    
+    # Get customer data for prediction
+    input_query = f"""
+    SELECT
+        {amount}::FLOAT AS amount,
+        '{merchant_category}' AS merchant_category,
+        '{is_international}'::BOOLEAN AS is_international,
+        c.credit_score::FLOAT AS credit_score,
+        c.risk_tier,
+        COALESCE(a.current_balance, 0)::BIGINT AS account_balance,
+        'DEBIT' AS transaction_type
+    FROM RAW.CUSTOMERS c
+    LEFT JOIN RAW.ACCOUNTS a ON c.customer_id = a.customer_id
+    WHERE c.customer_id = '{customer_id}'
     LIMIT 1
     """
     
-    features = session.sql(feature_query).collect()
+    input_df = session.sql(input_query)
     
-    if not features:
+    # Get predictions
+    predictions = model.run(input_df, function_name="predict")
+    
+    # Extract result
+    result = predictions.select("FRAUD_PREDICTION").collect()
+    
+    if not result:
         return json.dumps({
             "fraud_probability": 0.5,
             "risk_level": "UNKNOWN",
-            "reason_codes": ["NO_FEATURE_DATA"]
+            "prediction": "NO_DATA"
         })
     
-    row = features[0]
-    velocity_1h = row['VELOCITY_1H'] or 0
-    monthly_volume = row['MONTHLY_VOLUME'] or 1000
-    merchant_diversity = row['MERCHANT_DIVERSITY'] or 5
-    historical_risk = row['HISTORICAL_RISK'] or 0
-    
-    # Calculate fraud probability
-    fraud_prob = 0.1  # Base risk
-    reason_codes = []
-    
-    if amount > monthly_volume * 0.5:
-        fraud_prob += 0.3
-        reason_codes.append('UNUSUAL_AMOUNT')
-    
-    if velocity_1h > 5:
-        fraud_prob += 0.2
-        reason_codes.append('HIGH_VELOCITY')
-    
-    if is_international:
-        fraud_prob += 0.15
-        reason_codes.append('INTERNATIONAL_TXN')
-    
-    if merchant_category in ['7995', '5933', '6010']:
-        fraud_prob += 0.2
-        reason_codes.append('RISKY_MERCHANT')
-    
-    fraud_prob += historical_risk * 0.15
-    fraud_prob = min(1.0, max(0.0, fraud_prob))
-    
-    # Determine risk level
-    if fraud_prob >= 0.7:
-        risk_level = 'HIGH'
-    elif fraud_prob >= 0.4:
-        risk_level = 'MEDIUM'
-    elif fraud_prob >= 0.2:
-        risk_level = 'LOW'
-    else:
-        risk_level = 'MINIMAL'
+    fraud_prediction = int(result[0]['FRAUD_PREDICTION'])
     
     return json.dumps({
-        "fraud_probability": round(fraud_prob, 4),
-        "risk_level": risk_level,
-        "reason_codes": reason_codes
+        "customer_id": customer_id,
+        "amount": float(amount),
+        "is_fraud_predicted": fraud_prediction == 1,
+        "model_version": "FRAUD_DETECTION_MODEL"
     })
 $$;
 
@@ -109,236 +88,127 @@ $$;
 DROP FUNCTION IF EXISTS CALCULATE_ADVANCE_ELIGIBILITY(VARCHAR);
 
 CREATE OR REPLACE PROCEDURE CALCULATE_ADVANCE_ELIGIBILITY(
-    customer_id VARCHAR
+    CUSTOMER_ID VARCHAR
 )
 RETURNS STRING
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.10'
-PACKAGES = ('snowflake-snowpark-python')
+PACKAGES = ('snowflake-ml-python', 'scikit-learn')
 HANDLER = 'calculate_eligibility'
-COMMENT = 'Determines cash advance eligibility and limit using Feature Store data'
+COMMENT = 'Calls ADVANCE_ELIGIBILITY_MODEL from Model Registry to predict advance repayment'
 AS
 $$
 def calculate_eligibility(session, customer_id):
+    from snowflake.ml.registry import Registry
     import json
     
-    # Get customer data
-    query = f"""
-        SELECT
-            c.customer_id,
-            c.credit_score,
-            c.customer_status,
-            c.risk_tier,
-            COALESCE(dd.monthly_deposits, 0) as monthly_deposits,
-            COALESCE(af.total_advances::NUMBER, 0) as total_advances,
-            COALESCE(af.repayment_rate::NUMBER, 1.0) as repayment_rate,
-            COALESCE(af.current_balance::NUMBER, 0) as current_advance_balance
-        FROM RAW.CUSTOMERS c
-        LEFT JOIN (
-            SELECT 
-                customer_id,
-            SUM(amount) as monthly_deposits
-            FROM RAW.DIRECT_DEPOSITS
-            WHERE deposit_date >= DATEADD('month', -1, CURRENT_DATE())
-            GROUP BY customer_id
-        ) dd ON c.customer_id = dd.customer_id
-        LEFT JOIN (
-            SELECT 
-                entity_id,
-                feature_vector:total_advances as total_advances,
-                feature_vector:repayment_rate as repayment_rate,
-                feature_vector:current_balance as current_balance
-            FROM FEATURE_STORE.ONLINE_FEATURES
-        WHERE entity_type = 'CUSTOMER'
-        ) af ON c.customer_id = af.entity_id
+    # Get model
+    reg = Registry(session)
+    model = reg.get_model("ADVANCE_ELIGIBILITY_MODEL").default
+    
+    # Get customer data for prediction
+    input_query = f"""
+    SELECT
+        100.0::FLOAT AS advance_amount,
+        5.0::FLOAT AS fee_amount,
+        COALESCE(ca.eligibility_score, 0.5)::FLOAT AS eligibility_score,
+        COALESCE(c.credit_score, 650)::FLOAT AS credit_score,
+        c.risk_tier,
+        c.employment_status,
+        COUNT(DISTINCT dd.deposit_id)::FLOAT AS deposit_count,
+        COALESCE(AVG(dd.amount), 1000)::FLOAT AS avg_deposit_amount
+    FROM RAW.CUSTOMERS c
+    LEFT JOIN RAW.CASH_ADVANCES ca ON c.customer_id = ca.customer_id AND ca.advance_status = 'ACTIVE'
+    LEFT JOIN RAW.DIRECT_DEPOSITS dd ON c.customer_id = dd.customer_id
     WHERE c.customer_id = '{customer_id}'
+    GROUP BY ca.eligibility_score, c.credit_score, c.risk_tier, c.employment_status
+    LIMIT 1
     """
     
-    result = session.sql(query).collect()
+    input_df = session.sql(input_query)
+    
+    # Get predictions
+    predictions = model.run(input_df, function_name="predict")
+    
+    # Extract result
+    result = predictions.select("REPAYMENT_PREDICTION").collect()
     
     if not result:
         return json.dumps({
             "is_eligible": False,
-            "max_advance_amount": 0,
-            "eligibility_score": 0.0,
-            "decline_reasons": ["CUSTOMER_NOT_FOUND"]
+            "reason": "NO_DATA"
         })
     
-    row = result[0]
-    customer_status = row['CUSTOMER_STATUS']
-    current_advance_balance = row['CURRENT_ADVANCE_BALANCE']
-    monthly_deposits = row['MONTHLY_DEPOSITS']
-    credit_score = row['CREDIT_SCORE'] or 0
-    risk_tier = row['RISK_TIER']
-    total_advances = row['TOTAL_ADVANCES']
-    repayment_rate = row['REPAYMENT_RATE']
-    
-    # Check eligibility
-    decline_reasons = []
-    is_eligible = True
-    
-    if customer_status != 'ACTIVE':
-        is_eligible = False
-        decline_reasons.append('ACCOUNT_NOT_ACTIVE')
-    
-    if current_advance_balance > 0:
-        is_eligible = False
-        decline_reasons.append('EXISTING_ADVANCE_ACTIVE')
-    
-    if monthly_deposits < 1000:
-        is_eligible = False
-        decline_reasons.append('INSUFFICIENT_DIRECT_DEPOSITS')
-    
-    if credit_score < 600:
-        is_eligible = False
-        decline_reasons.append('LOW_CREDIT_SCORE')
-    
-    if risk_tier == 'HIGH':
-        is_eligible = False
-        decline_reasons.append('HIGH_RISK_PROFILE')
-    
-    # Calculate eligibility score
-    eligibility_score = 0.2  # Base score
-    eligibility_score += 0.2 if credit_score >= 700 else credit_score / 3500.0
-    eligibility_score += 0.2 if monthly_deposits >= 2000 else monthly_deposits / 10000.0
-    eligibility_score += repayment_rate * 0.2
-    eligibility_score += 0.2 if total_advances >= 5 and repayment_rate == 1.0 else 0.0
-    eligibility_score = min(1.0, max(0.0, eligibility_score))
-    
-    # Calculate max advance amount
-    if not is_eligible or repayment_rate < 0.8:
-        max_advance_amount = 0
-    elif total_advances == 0:
-        max_advance_amount = min(100, monthly_deposits * 0.1)
-    elif total_advances < 3:
-        max_advance_amount = min(250, monthly_deposits * 0.15)
-    elif repayment_rate == 1.0:
-        max_advance_amount = min(500, monthly_deposits * 0.25)
-    else:
-        max_advance_amount = min(250, monthly_deposits * 0.15)
+    will_repay = int(result[0]['REPAYMENT_PREDICTION'])
     
     return json.dumps({
-        "is_eligible": is_eligible,
-        "max_advance_amount": float(max_advance_amount),
-        "eligibility_score": round(eligibility_score, 2),
-        "decline_reasons": decline_reasons
+        "customer_id": customer_id,
+        "is_eligible": will_repay == 1,
+        "predicted_repayment_success": will_repay == 1,
+        "model_version": "ADVANCE_ELIGIBILITY_MODEL"
     })
 $$;
 
 -- ============================================================================
--- Procedure 3: Credit Limit Recommendation
+-- Procedure 3: Credit Limit Recommendation (Placeholder - uses advance model)
 -- ============================================================================
 
 -- Drop if exists
 DROP FUNCTION IF EXISTS RECOMMEND_CREDIT_LIMIT(VARCHAR, VARCHAR);
 
 CREATE OR REPLACE PROCEDURE RECOMMEND_CREDIT_LIMIT(
-    customer_id VARCHAR,
-    product_type VARCHAR
+    CUSTOMER_ID VARCHAR,
+    PRODUCT_TYPE VARCHAR
 )
 RETURNS STRING
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.10'
-PACKAGES = ('snowflake-snowpark-python')
+PACKAGES = ('snowflake-ml-python', 'scikit-learn')
 HANDLER = 'recommend_limit'
-COMMENT = 'Recommends credit limit based on customer profile and behavior'
+COMMENT = 'Recommends credit limit based on customer profile'
 AS
 $$
 def recommend_limit(session, customer_id, product_type):
     import json
     
+    # Simplified recommendation based on customer data
     query = f"""
-        SELECT
-            c.customer_id,
-            c.credit_score,
-            c.income_verified,
-            c.employment_status,
-            COALESCE(t.monthly_spend, 0) as monthly_spend,
-            COALESCE(t.transaction_count, 0) as transaction_count,
-            COALESCE(cc.current_utilization, 0) as current_utilization,
-        COALESCE(cc.payment_history, 1.0) as payment_history
-        FROM RAW.CUSTOMERS c
-        LEFT JOIN (
-            SELECT 
-                customer_id,
-                SUM(ABS(amount)) as monthly_spend,
-                COUNT(*) as transaction_count
-            FROM RAW.TRANSACTIONS
-            WHERE transaction_type = 'DEBIT'
-                AND transaction_date >= DATEADD('month', -3, CURRENT_DATE())
-            GROUP BY customer_id
-        ) t ON c.customer_id = t.customer_id
-        LEFT JOIN (
-            SELECT 
-                customer_id,
-                AVG(CASE WHEN credit_limit > 0 THEN ABS(current_balance) / credit_limit ELSE 0 END) as current_utilization,
-            1.0 as payment_history
-            FROM RAW.ACCOUNTS
-            WHERE account_type IN ('BELIEVE_CARD', 'LINE_OF_CREDIT')
-            GROUP BY customer_id
-        ) cc ON c.customer_id = cc.customer_id
+    SELECT
+        c.credit_score,
+        c.risk_tier,
+        COALESCE(AVG(a.current_balance), 0) as avg_balance
+    FROM RAW.CUSTOMERS c
+    LEFT JOIN RAW.ACCOUNTS a ON c.customer_id = a.customer_id
     WHERE c.customer_id = '{customer_id}'
+    GROUP BY c.credit_score, c.risk_tier
     """
     
     result = session.sql(query).collect()
     
     if not result:
-        return json.dumps({
-            "recommended_limit": 0,
-            "risk_adjusted_limit": 0,
-            "utilization_forecast": 0.0,
-            "confidence_score": 0.0
-        })
+        return json.dumps({"recommended_limit": 0, "reason": "CUSTOMER_NOT_FOUND"})
     
     row = result[0]
     credit_score = row['CREDIT_SCORE'] or 600
-    income_verified = row['INCOME_VERIFIED'] or 0
-    monthly_spend = row['MONTHLY_SPEND']
-    transaction_count = row['TRANSACTION_COUNT']
-    payment_history = row['PAYMENT_HISTORY']
     
-    # Calculate base limit
-    if credit_score < 600:
-        recommended_limit = 500
-    elif credit_score < 650:
-        recommended_limit = income_verified * 0.02
-    elif credit_score < 700:
-        recommended_limit = income_verified * 0.05
-    elif credit_score < 750:
-        recommended_limit = income_verified * 0.08
+    # Simple rule-based limit
+    if credit_score >= 750:
+        limit = 5000
+    elif credit_score >= 700:
+        limit = 2500
+    elif credit_score >= 650:
+        limit = 1000
     else:
-        recommended_limit = income_verified * 0.10
+        limit = 500
     
-    # Risk-adjusted limit
-    if product_type == 'BELIEVE_CARD':
-        if monthly_spend > 0:
-            risk_adjusted_limit = min(recommended_limit, monthly_spend * 2.5)
-        else:
-            risk_adjusted_limit = min(recommended_limit, 1000)
-    elif product_type == 'LINE_OF_CREDIT':
-        risk_adjusted_limit = min(recommended_limit * 2, 10000)
-    else:
-        risk_adjusted_limit = recommended_limit
-    
-    # Utilization forecast
-    if monthly_spend > 0 and risk_adjusted_limit > 0:
-        utilization_forecast = min(0.95, monthly_spend / risk_adjusted_limit)
-    else:
-        utilization_forecast = 0.30
-    
-    # Confidence score
-    confidence_score = 0.0
-    confidence_score += 0.25 if income_verified > 0 else 0
-    confidence_score += 0.25 if transaction_count > 50 else transaction_count / 200.0
-    confidence_score += (credit_score / 850.0) * 0.25
-    confidence_score += payment_history * 0.25
-    confidence_score = min(1.0, confidence_score)
+    if product_type == 'LINE_OF_CREDIT':
+        limit = limit * 2
     
     return json.dumps({
-        "recommended_limit": float(recommended_limit),
-        "risk_adjusted_limit": float(risk_adjusted_limit),
-        "utilization_forecast": round(utilization_forecast, 2),
-        "confidence_score": round(confidence_score, 2)
+        "customer_id": customer_id,
+        "product_type": product_type,
+        "recommended_limit": limit,
+        "credit_score": int(credit_score)
     })
 $$;
 
@@ -350,138 +220,84 @@ $$;
 DROP FUNCTION IF EXISTS PREDICT_CUSTOMER_LTV(VARCHAR);
 
 CREATE OR REPLACE PROCEDURE PREDICT_CUSTOMER_LTV(
-    customer_id VARCHAR
+    CUSTOMER_ID VARCHAR
 )
 RETURNS STRING
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.10'
-PACKAGES = ('snowflake-snowpark-python')
+PACKAGES = ('snowflake-ml-python', 'scikit-learn')
 HANDLER = 'predict_ltv'
-COMMENT = 'Predicts customer lifetime value based on behavior patterns'
+COMMENT = 'Calls CUSTOMER_LTV_MODEL from Model Registry to predict lifetime value'
 AS
 $$
 def predict_ltv(session, customer_id):
+    from snowflake.ml.registry import Registry
     import json
-    from datetime import datetime
     
-    query = f"""
+    # Get model
+    reg = Registry(session)
+    model = reg.get_model("CUSTOMER_LTV_MODEL").default
+    
+    # Get customer data for prediction
+    input_query = f"""
         SELECT
-            c.customer_id,
-            DATEDIFF('month', c.acquisition_date, CURRENT_DATE()) as tenure_months,
-            c.lifetime_value as current_ltv,
-            COALESCE(r.total_revenue, 0) as total_revenue,
-            COALESCE(r.monthly_revenue, 0) as monthly_revenue,
-            COALESCE(e.product_count, 0) as product_count,
-            COALESCE(e.transaction_frequency, 0) as transaction_frequency,
-        COALESCE(e.has_direct_deposit, 0) as has_direct_deposit
-        FROM RAW.CUSTOMERS c
-        LEFT JOIN (
-            SELECT 
-                customer_id,
-                SUM(CASE 
-                    WHEN transaction_type = 'FEE' THEN amount
-                WHEN merchant_category IS NOT NULL THEN ABS(amount) * 0.015
-                    ELSE 0
-                END) as total_revenue,
-                AVG(CASE 
-                    WHEN transaction_type = 'FEE' THEN amount
-                    WHEN merchant_category IS NOT NULL THEN ABS(amount) * 0.015
-                    ELSE 0
-                END) * 30 as monthly_revenue
-            FROM RAW.TRANSACTIONS
-        WHERE customer_id = '{customer_id}'
-            GROUP BY customer_id
-        ) r ON c.customer_id = r.customer_id
-        LEFT JOIN (
-            SELECT 
-                c.customer_id,
-                COUNT(DISTINCT a.account_type) as product_count,
-            0.5 as transaction_frequency,
-                MAX(CASE WHEN dd.customer_id IS NOT NULL THEN 1 ELSE 0 END) as has_direct_deposit
+        DATEDIFF('month', c.acquisition_date, CURRENT_DATE())::FLOAT AS tenure_months,
+        COALESCE(c.credit_score, 650)::FLOAT AS credit_score,
+        c.risk_tier,
+        c.acquisition_channel,
+        COUNT(DISTINCT a.account_id)::FLOAT AS product_count,
+        COALESCE(AVG(a.current_balance), 0)::FLOAT AS avg_account_balance,
+        COUNT(DISTINCT CASE WHEN t.transaction_date >= DATEADD('day', -90, CURRENT_DATE())
+                       THEN t.transaction_id END)::FLOAT AS recent_transaction_count,
+        (COUNT(DISTINCT dd.deposit_id) > 0)::BOOLEAN AS has_direct_deposit
             FROM RAW.CUSTOMERS c
             LEFT JOIN RAW.ACCOUNTS a ON c.customer_id = a.customer_id
+            LEFT JOIN RAW.TRANSACTIONS t ON c.customer_id = t.customer_id
             LEFT JOIN RAW.DIRECT_DEPOSITS dd ON c.customer_id = dd.customer_id
-        WHERE c.customer_id = '{customer_id}'
-            GROUP BY c.customer_id
-        ) e ON c.customer_id = e.customer_id
     WHERE c.customer_id = '{customer_id}'
+    GROUP BY c.acquisition_date, c.credit_score, c.risk_tier, c.acquisition_channel
+    LIMIT 1
     """
     
-    result = session.sql(query).collect()
+    input_df = session.sql(input_query)
+    
+    # Get predictions
+    predictions = model.run(input_df, function_name="predict")
+    
+    # Extract result
+    result = predictions.select("PREDICTED_LTV").collect()
     
     if not result:
         return json.dumps({
-            "predicted_ltv": 0.0,
-            "ltv_segment": "UNKNOWN",
-            "retention_probability": 0.5,
-            "growth_potential": "UNKNOWN"
+            "predicted_ltv": 0,
+            "reason": "NO_DATA"
         })
     
-    row = result[0]
-    tenure_months = row['TENURE_MONTHS']
-    current_ltv = row['CURRENT_LTV'] or 0
-    monthly_revenue = row['MONTHLY_REVENUE'] or 0
-    product_count = row['PRODUCT_COUNT']
-    transaction_frequency = row['TRANSACTION_FREQUENCY']
-    has_direct_deposit = row['HAS_DIRECT_DEPOSIT']
-    
-    # Calculate retention probability
-    retention_prob = 0.5  # Base retention
-    retention_prob += 0.2 if has_direct_deposit == 1 else 0
-    retention_prob += 0.15 if product_count >= 3 else product_count * 0.05
-    retention_prob += transaction_frequency * 0.1
-    retention_prob += 0.05 if tenure_months >= 12 else 0
-    retention_prob = min(0.95, max(0.1, retention_prob))
-    
-    # Predict LTV
-    if tenure_months < 6:
-        predicted_ltv = monthly_revenue * 36 * retention_prob
-    else:
-        revenue_trend = 1.1
-        predicted_ltv = current_ltv + (monthly_revenue * 24 * retention_prob * revenue_trend)
-    
-    # LTV Segment
-    if predicted_ltv >= 5000:
-        ltv_segment = 'PREMIUM'
-    elif predicted_ltv >= 1000:
-        ltv_segment = 'HIGH_VALUE'
-    elif predicted_ltv >= 250:
-        ltv_segment = 'STANDARD'
-    else:
-        ltv_segment = 'DEVELOPING'
-    
-    # Growth potential
-    if product_count < 2 and has_direct_deposit == 0:
-        growth_potential = 'HIGH'
-    elif product_count < 3:
-        growth_potential = 'MEDIUM'
-    else:
-        growth_potential = 'LOW'
+    predicted_ltv = float(result[0]['PREDICTED_LTV'])
     
     return json.dumps({
+        "customer_id": customer_id,
         "predicted_ltv": round(predicted_ltv, 2),
-        "ltv_segment": ltv_segment,
-        "retention_probability": round(retention_prob, 2),
-        "growth_potential": growth_potential
+        "model_version": "CUSTOMER_LTV_MODEL"
     })
 $$;
 
 -- ============================================================================
--- Procedure 5: Anomaly Detection for Transactions
+-- Procedure 5: Anomaly Detection (Simplified - no model)
 -- ============================================================================
 
 -- Drop if exists
 DROP FUNCTION IF EXISTS DETECT_TRANSACTION_ANOMALIES(NUMBER);
 
 CREATE OR REPLACE PROCEDURE DETECT_TRANSACTION_ANOMALIES(
-    lookback_hours NUMBER
+    LOOKBACK_HOURS NUMBER
 )
 RETURNS STRING
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.10'
 PACKAGES = ('snowflake-snowpark-python')
 HANDLER = 'detect_anomalies'
-COMMENT = 'Detects unusual transaction patterns across all customers'
+COMMENT = 'Detects unusual transaction patterns using rule-based logic'
 AS
 $$
 def detect_anomalies(session, lookback_hours):
@@ -491,86 +307,19 @@ def detect_anomalies(session, lookback_hours):
         lookback_hours = 24
     
     query = f"""
-    WITH recent_activity AS (
         SELECT
             t.customer_id,
             COUNT(*) as transaction_count,
-            SUM(ABS(amount)) as total_amount,
-            COUNT(DISTINCT merchant_category) as unique_categories,
-            COUNT(DISTINCT merchant_state) as unique_states,
-            MAX(ABS(amount)) as max_amount,
-            COUNT(CASE WHEN is_international THEN 1 END) as international_count,
-            AVG(fraud_score) as avg_fraud_score
+        SUM(ABS(t.amount)) as total_amount,
+        MAX(ABS(t.amount)) as max_amount,
+        AVG(t.fraud_score) as avg_fraud_score
         FROM RAW.TRANSACTIONS t
-        WHERE t.transaction_timestamp >= DATEADD('hour', -{lookback_hours}, CURRENT_TIMESTAMP())
+    WHERE t.transaction_timestamp >= DATEADD('hour', -{lookback_hours}, CURRENT_TIMESTAMP())
             AND t.status = 'COMPLETED'
         GROUP BY t.customer_id
-    ),
-    historical_baseline AS (
-        SELECT
-            t.customer_id,
-            AVG(daily_count) as avg_daily_transactions,
-            AVG(daily_amount) as avg_daily_amount,
-            STDDEV(daily_count) as stddev_transactions,
-            STDDEV(daily_amount) as stddev_amount,
-            MAX(max_historical_amount) as max_historical_amount
-        FROM (
-            SELECT 
-                customer_id,
-                DATE(transaction_date) as transaction_date,
-                COUNT(*) as daily_count,
-                SUM(ABS(amount)) as daily_amount,
-                MAX(ABS(amount)) as max_historical_amount
-            FROM RAW.TRANSACTIONS
-            WHERE transaction_date BETWEEN DATEADD('day', -30, CURRENT_DATE()) 
-                AND DATEADD('day', -1, CURRENT_DATE())
-            GROUP BY customer_id, DATE(transaction_date)
-        ) t
-        GROUP BY t.customer_id
-    ),
-    anomalies AS (
-    SELECT
-        r.customer_id,
-        CASE
-            WHEN r.transaction_count > h.avg_daily_transactions + (3 * COALESCE(h.stddev_transactions, 1)) 
-                THEN 'VELOCITY_SPIKE'
-            WHEN r.total_amount > h.avg_daily_amount + (3 * COALESCE(h.stddev_amount, h.avg_daily_amount))
-                THEN 'AMOUNT_SPIKE'
-            WHEN r.max_amount > COALESCE(h.max_historical_amount, 0) * 2 
-                AND r.max_amount > 500
-                THEN 'UNUSUAL_LARGE_TRANSACTION'
-            WHEN r.international_count > 3
-                THEN 'MULTIPLE_INTERNATIONAL'
-            WHEN r.unique_states > 5
-                THEN 'GEOGRAPHIC_DISPERSION'
-            WHEN r.avg_fraud_score > 0.6
-                THEN 'HIGH_RISK_PATTERN'
-            ELSE 'BEHAVIORAL_ANOMALY'
-        END as anomaly_type,
-            (r.transaction_count - h.avg_daily_transactions) / GREATEST(h.avg_daily_transactions, 1) * 0.3 +
-            (r.total_amount - h.avg_daily_amount) / GREATEST(h.avg_daily_amount, 1) * 0.3 +
-            r.avg_fraud_score * 0.4 as anomaly_score,
-        r.transaction_count,
-            r.total_amount
-    FROM recent_activity r
-    JOIN historical_baseline h ON r.customer_id = h.customer_id
-    WHERE 
-        r.transaction_count > h.avg_daily_transactions + (2 * COALESCE(h.stddev_transactions, 1))
-        OR r.total_amount > h.avg_daily_amount + (2 * COALESCE(h.stddev_amount, h.avg_daily_amount))
-        OR r.avg_fraud_score > 0.5
-        OR r.international_count > 3
-        OR r.unique_states > 5
-    ORDER BY anomaly_score DESC
-        LIMIT 50
-    )
-    SELECT
-        customer_id,
-        anomaly_type,
-        LEAST(1.0, GREATEST(0.0, anomaly_score)) as anomaly_score,
-        transaction_count,
-        total_amount,
-        CURRENT_TIMESTAMP() as detection_timestamp
-    FROM anomalies
+    HAVING COUNT(*) > 10 OR AVG(t.fraud_score) > 0.6
+    ORDER BY avg_fraud_score DESC
+    LIMIT 50
     """
     
     result = session.sql(query).collect()
@@ -579,11 +328,10 @@ def detect_anomalies(session, lookback_hours):
     for row in result:
         anomalies_list.append({
             "customer_id": row['CUSTOMER_ID'],
-            "anomaly_type": row['ANOMALY_TYPE'],
-            "anomaly_score": round(row['ANOMALY_SCORE'], 2),
             "transaction_count": int(row['TRANSACTION_COUNT']),
             "total_amount": float(row['TOTAL_AMOUNT']),
-            "detection_timestamp": row['DETECTION_TIMESTAMP'].isoformat()
+            "max_amount": float(row['MAX_AMOUNT']),
+            "avg_fraud_score": round(float(row['AVG_FRAUD_SCORE']), 2)
         })
     
     return json.dumps({
