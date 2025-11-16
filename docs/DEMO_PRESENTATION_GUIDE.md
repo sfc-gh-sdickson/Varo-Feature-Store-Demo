@@ -124,22 +124,9 @@ Ask these questions live:
 
 ### 6. **Show Architecture Simplification (2 minutes)**
 
-**Display `architecture_diagram.svg`:**
+**Display the architecture diagram:**
 
-#### Current Tecton Stack:
-```
-[Databricks] → [Tecton] → [Feature Serving] → [ML Models]
-     ↑            ↑            ↑
-  Compute    Platform    Separate API
-   Cost      License      Infrastructure
-```
-
-#### Snowflake Solution:
-```
-[Snowflake] → [Feature Store] → [ML Models]
-     ↑              ↑                ↑
-  One Platform  Included      Snowpark ML
-```
+![Architecture Comparison: Tecton vs Snowflake](../architecture_diagram.svg)
 
 **Key message:**
 - "3 systems → 1 system"
