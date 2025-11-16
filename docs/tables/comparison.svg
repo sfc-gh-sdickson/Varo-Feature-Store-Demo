@@ -1,0 +1,78 @@
+<svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .header { fill: #0066cc; stroke: #000; stroke-width: 1; }
+      .header-text { fill: white; font-weight: bold; font-size: 14px; }
+      .row-alt { fill: #f5f5f5; stroke: #000; stroke-width: 1; }
+      .row-white { fill: white; stroke: #000; stroke-width: 1; }
+      .row-green { fill: #e6ffe6; stroke: #000; stroke-width: 1; }
+      .cell-text { font-size: 13px; }
+      .cell-text-bold { font-size: 13px; font-weight: bold; fill: #006600; }
+    </style>
+  </defs>
+  
+  <!-- Header Row -->
+  <rect class="header" x="10" y="10" width="200" height="40"/>
+  <text class="header-text" x="110" y="35" text-anchor="middle">Metric</text>
+  
+  <rect class="header" x="210" y="10" width="230" height="40"/>
+  <text class="header-text" x="325" y="35" text-anchor="middle">Tecton</text>
+  
+  <rect class="header" x="440" y="10" width="230" height="40"/>
+  <text class="header-text" x="555" y="35" text-anchor="middle">Snowflake</text>
+  
+  <rect class="header" x="670" y="10" width="220" height="40"/>
+  <text class="header-text" x="780" y="35" text-anchor="middle">Improvement</text>
+  
+  <!-- Row 1: Feature computation time -->
+  <rect class="row-alt" x="10" y="50" width="200" height="40"/>
+  <text class="cell-text" x="110" y="75" text-anchor="middle">Feature computation</text>
+  
+  <rect class="row-white" x="210" y="50" width="230" height="40"/>
+  <text class="cell-text" x="325" y="75" text-anchor="middle">45-60 min</text>
+  
+  <rect class="row-white" x="440" y="50" width="230" height="40"/>
+  <text class="cell-text" x="555" y="75" text-anchor="middle">12-18 min</text>
+  
+  <rect class="row-green" x="670" y="50" width="220" height="40"/>
+  <text class="cell-text-bold" x="780" y="75" text-anchor="middle">3-4x faster</text>
+  
+  <!-- Row 2: Monthly cost -->
+  <rect class="row-alt" x="10" y="90" width="200" height="40"/>
+  <text class="cell-text" x="110" y="115" text-anchor="middle">Monthly cost</text>
+  
+  <rect class="row-white" x="210" y="90" width="230" height="40"/>
+  <text class="cell-text" x="325" y="115" text-anchor="middle">$8,500</text>
+  
+  <rect class="row-white" x="440" y="90" width="230" height="40"/>
+  <text class="cell-text" x="555" y="115" text-anchor="middle">$3,200</text>
+  
+  <rect class="row-green" x="670" y="90" width="220" height="40"/>
+  <text class="cell-text-bold" x="780" y="115" text-anchor="middle">60-70% cheaper</text>
+  
+  <!-- Row 3: Infrastructure -->
+  <rect class="row-alt" x="10" y="130" width="200" height="40"/>
+  <text class="cell-text" x="110" y="155" text-anchor="middle">Infrastructure</text>
+  
+  <rect class="row-white" x="210" y="130" width="230" height="40"/>
+  <text class="cell-text" x="325" y="155" text-anchor="middle">Databricks + Tecton</text>
+  
+  <rect class="row-white" x="440" y="130" width="230" height="40"/>
+  <text class="cell-text" x="555" y="155" text-anchor="middle">Snowflake only</text>
+  
+  <rect class="row-green" x="670" y="130" width="220" height="40"/>
+  <text class="cell-text-bold" x="780" y="155" text-anchor="middle">Single platform</text>
+  
+  <!-- Row 4: Data movement -->
+  <rect class="row-alt" x="10" y="170" width="200" height="40"/>
+  <text class="cell-text" x="110" y="195" text-anchor="middle">Data movement</text>
+  
+  <rect class="row-white" x="210" y="170" width="230" height="40"/>
+  <text class="cell-text" x="325" y="195" text-anchor="middle">Required</text>
+  
+  <rect class="row-white" x="440" y="170" width="230" height="40"/>
+  <text class="cell-text" x="555" y="195" text-anchor="middle">None</text>
+  
+  <rect class="row-green" x="670" y="170" width="220" height="40"/>
+  <text class="cell-text-bold" x="780" y="195" text-anchor="middle">Zero ETL</text>
+</svg>

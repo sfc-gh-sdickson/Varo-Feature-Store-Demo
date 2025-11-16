@@ -88,12 +88,8 @@ AS
 
 **Key numbers to highlight:**
 
-| Metric | Tecton | Snowflake | Improvement |
-|--------|--------|-----------|-------------|
-| Feature computation time | 45-60 min | 12-18 min | **3-4x faster** |
-| Monthly cost | $8,500 | $3,200 | **60-70% cheaper** |
-| Infrastructure | Databricks + Tecton | Snowflake only | **Single platform** |
-| Data movement | Required | None | **Zero ETL** |
+![Performance and Cost Comparison](./tables/comparison.svg)
+
 
 **Key talking points:**
 - "Tecton license alone is $100K-500K/year"
