@@ -153,38 +153,67 @@ Ask these questions live:
 
 ---
 
-### 7. **Address API Serving Requirement (2 minutes)**
+### 7. **Demonstrate Online Feature Serving (3 minutes)**
 
-**Show in `sql/feature_store/03_create_feature_store.sql`:**
+**This is a KEY DIFFERENTIATOR from Tecton**
 
-```sql
--- Real-time feature serving via SQL functions
-CREATE FUNCTION GET_CUSTOMER_FEATURES(customer_id VARCHAR)
-RETURNS VARIANT
-AS
-$$
-    SELECT feature_vector
-    FROM ONLINE_FEATURES
-    WHERE entity_id = customer_id
-    ORDER BY last_updated DESC
-    LIMIT 1
-$$;
-```
+**In Snowsight, navigate to: AI/ML > Feature Store**
+
+Show the 4 registered Feature Views:
+- ✅ CUSTOMER_PROFILE_FEATURES (online serving enabled, 5-min freshness)
+- ✅ TRANSACTION_PATTERN_FEATURES (online serving enabled, 30-sec freshness)
+- ✅ ADVANCE_RISK_FEATURES (online serving enabled, 5-min freshness)
+- ✅ FRAUD_DETECTION_FEATURES (online serving enabled, 30-sec freshness)
 
 **Key points:**
-- "Sub-second response times for feature retrieval"
-- "Can expose via Snowflake External Functions to your existing APIs"
-- "Or call directly from Snowpark for model inference"
-- "Online feature store with automatic refresh"
+- "Each Feature View has TWO stores: offline (historical) and online (real-time)"
+- "Offline store uses Dynamic Tables for scheduled refresh (1 hour for profiles, 15 min for fraud)"
+- "Online store uses Hybrid Tables for sub-second lookups"
+- "Data automatically syncs from offline to online on your schedule"
+- "Perfect for fraud detection - 30 seconds freshness for real-time scoring"
 
-**Show the ONLINE_FEATURES table structure:**
-- Pre-aggregated feature vectors
-- Indexed for fast lookup
-- Auto-updated by Dynamic Tables
+**Run this query in Snowsight to show online data:**
+```sql
+SELECT * FROM VARO_INTELLIGENCE.FEATURE_STORE."CUSTOMER_PROFILE_FEATURES$v1$ONLINE" LIMIT 5;
+```
+
+**Contrast with Tecton:**
+- Tecton requires separate infrastructure for online serving (Redis, DynamoDB, etc.)
+- Complex setup and maintenance
+- Additional cost for operational infrastructure
+- Snowflake handles this automatically within the platform
 
 ---
 
-### 8. **Live Code Walkthrough - Feature Definition (3 minutes)**
+### 8. **Address API Serving Requirement (2 minutes)**
+
+**Show how to call online features from applications:**
+
+```python
+# From the notebook - low-latency feature retrieval
+from snowflake.ml.feature_store import StoreType
+
+features = fs.read_feature_view(
+    feature_view=fraud_detection_fv,
+    keys=[["CUST00001"]],
+    store_type=StoreType.ONLINE  # Sub-second latency
+)
+```
+
+**Options for serving to production:**
+1. **Direct SQL:** Query the online store table from your app
+2. **Snowflake API:** REST endpoint for feature retrieval
+3. **Snowpark:** Python/Java API in your inference pipeline
+4. **External Functions:** Expose to external systems
+
+**Key benefit:**
+- "Same SQL you use for features - no translation layers"
+- "Sub-second response times for real-time models"
+- "Automatic failover to offline store if online unavailable"
+
+---
+
+### 9. **Live Code Walkthrough - Feature Definition (3 minutes)**
 
 **Pick ONE feature and trace it end-to-end:**
 
@@ -217,7 +246,7 @@ $$;
 
 ---
 
-### 9. **Close with Migration Path (2 minutes)**
+### 10. **Close with Migration Path (2 minutes)**
 
 **Key messages:**
 
