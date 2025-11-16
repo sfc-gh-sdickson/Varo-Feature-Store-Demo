@@ -225,32 +225,21 @@ $$;
 "What's the fraud risk for customer CUST12345's $500 transaction?"
 ```
 
-**Message:** "See how it flows through? SQL → Feature Store → Model → Agent. All in Snowflake."
+**Data Flow Diagram:**
+
+![Data Flow: SQL → Feature Store → Model → Agent](./tables/data_flow.svg)
+
+**Message:** "See how it flows through? Everything in Snowflake - zero integration overhead."
 
 ---
 
 ### 10. **Close with Migration Path (2 minutes)**
 
-**Key messages:**
+**Migration Timeline:**
 
-#### **Phase 1: Quick Wins (Weeks 1-4)**
-- Migrate read-only features first
-- Run in parallel with Tecton
-- Validate parity
-- **No risk to production**
+![Migration Phases: Quick Wins → Incremental → Full Cutover](./tables/migration_phases.svg)
 
-#### **Phase 2: Incremental Migration (Months 2-3)**
-- Move streaming features
-- Cutover non-critical models
-- Deprecate Tecton for these features
-- **Start seeing cost savings**
-
-#### **Phase 3: Full Cutover (Months 4-6)**
-- Migrate remaining features
-- Decommission Tecton
-- **Full cost savings realized**
-
-#### **Snowflake Support:**
+**Snowflake Support:**
 - "We have a dedicated migration team"
 - "We'll help translate Tecton feature definitions to SQL"
 - "Professional services available for complex features"

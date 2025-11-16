@@ -1,0 +1,41 @@
+<svg viewBox="0 0 1000 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .box { fill: #0066cc; stroke: #000; stroke-width: 2; }
+      .box-text { fill: white; font-weight: bold; font-size: 14px; }
+      .arrow { stroke: #000; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+      .label { font-size: 12px; font-weight: bold; fill: #006600; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#000" />
+    </marker>
+  </defs>
+  
+  <!-- SQL Box -->
+  <rect class="box" x="20" y="20" width="150" height="80" rx="5"/>
+  <text class="box-text" x="95" y="65" text-anchor="middle">SQL</text>
+  
+  <!-- Arrow 1 -->
+  <path class="arrow" d="M 170 60 L 210 60"/>
+  
+  <!-- Feature Store Box -->
+  <rect class="box" x="210" y="20" width="200" height="80" rx="5"/>
+  <text class="box-text" x="310" y="65" text-anchor="middle">Feature Store</text>
+  
+  <!-- Arrow 2 -->
+  <path class="arrow" d="M 410 60 L 450 60"/>
+  
+  <!-- ML Model Box -->
+  <rect class="box" x="450" y="20" width="150" height="80" rx="5"/>
+  <text class="box-text" x="525" y="65" text-anchor="middle">ML Model</text>
+  
+  <!-- Arrow 3 -->
+  <path class="arrow" d="M 600 60 L 640 60"/>
+  
+  <!-- Intelligence Agent Box -->
+  <rect class="box" x="640" y="20" width="200" height="80" rx="5"/>
+  <text class="box-text" x="740" y="65" text-anchor="middle">Intelligence Agent</text>
+  
+  <!-- Bottom label -->
+  <text class="label" x="500" y="115" text-anchor="middle">All in Snowflake - Zero Integration Overhead</text>
+</svg>

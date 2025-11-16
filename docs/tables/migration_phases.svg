@@ -1,0 +1,55 @@
+<svg viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .phase-box { stroke: #000; stroke-width: 2; }
+      .phase-header { fill: #0066cc; }
+      .phase-content { fill: #e6f2ff; }
+      .phase-text { font-weight: bold; font-size: 14px; fill: white; }
+      .phase-details { font-size: 12px; fill: #000; }
+      .timeline { stroke: #000; stroke-width: 3; }
+      .arrow { fill: #000; }
+    </style>
+  </defs>
+  
+  <!-- Timeline line -->
+  <line class="timeline" x1="50" y1="100" x2="950" y2="100"/>
+  
+  <!-- Phase 1: Quick Wins -->
+  <rect class="phase-box phase-header" x="20" y="30" width="260" height="30"/>
+  <text class="phase-text" x="150" y="51" text-anchor="middle">Phase 1: Quick Wins</text>
+  
+  <rect class="phase-box phase-content" x="20" y="60" width="260" height="110"/>
+  <text class="phase-details" x="30" y="80" font-weight="bold">Weeks 1-4</text>
+  <text class="phase-details" x="30" y="100">• Read-only features</text>
+  <text class="phase-details" x="30" y="120">• Parallel with Tecton</text>
+  <text class="phase-details" x="30" y="140">• Validate parity</text>
+  <text class="phase-details" x="30" y="160">• No production risk</text>
+  
+  <!-- Arrow pointing down -->
+  <polygon class="arrow" points="150,170 145,190 155,190"/>
+  
+  <!-- Phase 2: Incremental Migration -->
+  <rect class="phase-box phase-header" x="350" y="30" width="260" height="30"/>
+  <text class="phase-text" x="480" y="51" text-anchor="middle">Phase 2: Incremental</text>
+  
+  <rect class="phase-box phase-content" x="350" y="60" width="260" height="110"/>
+  <text class="phase-details" x="360" y="80" font-weight="bold">Months 2-3</text>
+  <text class="phase-details" x="360" y="100">• Streaming features</text>
+  <text class="phase-details" x="360" y="120">• Non-critical models</text>
+  <text class="phase-details" x="360" y="140">• Start cost savings</text>
+  <text class="phase-details" x="360" y="160">• Reduce Tecton load</text>
+  
+  <!-- Arrow pointing down -->
+  <polygon class="arrow" points="480,170 475,190 485,190"/>
+  
+  <!-- Phase 3: Full Cutover -->
+  <rect class="phase-box phase-header" x="680" y="30" width="260" height="30"/>
+  <text class="phase-text" x="810" y="51" text-anchor="middle">Phase 3: Full Cutover</text>
+  
+  <rect class="phase-box phase-content" x="680" y="60" width="260" height="110"/>
+  <text class="phase-details" x="690" y="80" font-weight="bold">Months 4-6</text>
+  <text class="phase-details" x="690" y="100">• Migrate remaining</text>
+  <text class="phase-details" x="690" y="120">• Decommission Tecton</text>
+  <text class="phase-details" x="690" y="140">• Full cost savings</text>
+  <text class="phase-details" x="690" y="160">• Single platform</text>
+</svg>
